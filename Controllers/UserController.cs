@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Server.DTOs;
 using Server.Interface;
@@ -55,16 +55,8 @@ namespace Server.Controllers
         {
             try
             {
-                var token = await _userServices.LoginUser(_loginUserDTOs);
-                Console.WriteLine("Generated Token: " + token);
-
-                Response.Cookies.Append("jwt", token, new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = false,
-                    SameSite = SameSiteMode.Lax,
-                    Expires = DateTimeOffset.UtcNow.AddHours(24)
-                });
+                await _userServices.LoginUser(_loginUserDTOs);
+                Console.WriteLine("Login successful");
 
                 return Ok(new { message = "Login successful" });
             }
@@ -76,9 +68,9 @@ namespace Server.Controllers
 
         [Authorize(Policy = "OwnerOnly")]
         [HttpPost("logout")]
-        public IActionResult Logout()
+        public async Task<IActionResult> Logout()
         {
-            Response.Cookies.Delete("jwt");
+            await HttpContext.SignOutAsync();
             return Ok(new { message = "Logout successful" });
         }
     }
