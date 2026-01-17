@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -12,7 +13,10 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddControllers();
+builder.Services.AddScoped<CurrentUserServices>();
+builder.Services.AddScoped<BarCodeServices>();
 builder.Services.AddScoped<IUserInterface, UserServices>();
+builder.Services.AddScoped<IProductInterface, ProductServices>();
 
 builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen(option =>
@@ -43,28 +47,22 @@ builder.Services.AddCors(config =>
     });
 });
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
+        options.Cookie.Name = "jwt";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.None;
 
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
+        options.LoginPath = "/auth/login";
+        options.AccessDeniedPath = "/auth/forbidden";
+    });
 
-        IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
-
-        NameClaimType = ClaimTypes.Name,
-        RoleClaimType = ClaimTypes.Role
-    };
-});
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("OwnerOnly", policy => policy.RequireRole("Owner"));
+    options.AddPolicy("OwnerOnly", policy => policy.RequireAuthenticatedUser().RequireClaim(ClaimTypes.Role, "Owner"));
 });
 
 var app = builder.Build();
