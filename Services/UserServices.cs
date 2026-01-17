@@ -2,6 +2,8 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Server.Data;
@@ -15,12 +17,12 @@ public class UserServices : IUserInterface
 {
     private readonly IConfiguration _config;
     private readonly AppDbContext _db;
-    private readonly IHttpContextAccessor _ihhtpContextAccessor;
+    private readonly IHttpContextAccessor _ihttpContextAccessor;
     public UserServices(IConfiguration configuration, AppDbContext appDb, IHttpContextAccessor httpContextAccessor)
     {
         _config = configuration;
         _db = appDb;
-        _ihhtpContextAccessor = httpContextAccessor;
+        _ihttpContextAccessor = httpContextAccessor;
     }
 
     public async Task RegisterUser(UserDTOs.RegisterUserDTOs _registerUserDTOs)
@@ -48,41 +50,27 @@ public class UserServices : IUserInterface
         await _db.SaveChangesAsync();
     }
 
-    public async Task<string> LoginUser(UserDTOs.LoginUserDTOs _loginUserDTOs)
+    public async Task LoginUser(UserDTOs.LoginUserDTOs _loginUserDTOs)
     {
         var user = await _db.Users.FirstOrDefaultAsync(c => c.Username == _loginUserDTOs.Username);
 
-        if (user == null)
-        {
+        if (user == null || !BCrypt.Net.BCrypt.Verify(_loginUserDTOs.Password, user.Password))
             throw new UnauthorizedAccessException("Username or password is incorrect");
-        }
-
-        var isPasswordValid = BCrypt.Net.BCrypt.Verify(_loginUserDTOs.Password, user.Password);
-
-        if (!isPasswordValid)
-        {
-            throw new UnauthorizedAccessException("Password is incorrect");
-        }
 
         var claims = new[]
         {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Name, _loginUserDTOs.Username),
-            new Claim(ClaimTypes.Role, user.Role!),
-        };
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+        new Claim(ClaimTypes.Name, _loginUserDTOs.Username),
+        new Claim(ClaimTypes.Role, user.Role!)
+    };
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        var principal = new ClaimsPrincipal(identity);
 
-         var token = new JwtSecurityToken(
-            issuer: _config["Jwt:Issuer"],
-            audience: _config["Jwt:Audience"],
-            claims: claims,
-            expires: DateTime.UtcNow.AddHours(2),
-            signingCredentials: creds
+        await _ihttpContextAccessor.HttpContext!.SignInAsync(
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            principal
         );
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
     public Task<User?> GetUserById(string? userId)
