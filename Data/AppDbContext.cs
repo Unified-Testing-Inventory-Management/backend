@@ -11,6 +11,7 @@ public class AppDbContext : DbContext
     public DbSet<Product> Products { get; set; }
     public DbSet<Sale> Sales { get; set; }
     public DbSet<Sale_Detail> Sale_Details { get; set; }
+    public DbSet<Archive> Archives { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
