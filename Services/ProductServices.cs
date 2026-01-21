@@ -1,8 +1,173 @@
-using System;
+using Microsoft.EntityFrameworkCore;
+using Server.Data;
+using Server.DTOs;
+using Server.Interface;
+using Server.Models;
 
-namespace Server.Services;
-
-public class ProductServices
+namespace Server.Services
 {
+    public class ProductServices : IProductInterface
+    {
+        private readonly AppDbContext _db;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private CurrentUserServices _currentUserServices;
+        private BarCodeServices _barCodeServices;
 
+        public ProductServices(AppDbContext db, IHttpContextAccessor httpContextAccessor, CurrentUserServices currentUserServices, BarCodeServices barCodeServices)
+        {
+            _db = db;
+            _httpContextAccessor = httpContextAccessor;
+            _currentUserServices = currentUserServices;
+            _barCodeServices = barCodeServices;
+        }
+
+
+        public async Task<List<Product>> GetAllProducts()
+        {
+            var userId = _currentUserServices.GetLoggedInUser();
+            return await _db.Products.Where(p => p.UserId == userId).OrderByDescending(p => p.CreatedAt).ToListAsync();
+        }
+
+        public async Task CreateProduct(ProductDTOs.CreateProductDTOs dto)
+        {
+            var userId = _currentUserServices.GetLoggedInUser();
+
+            if (string.IsNullOrWhiteSpace(dto.ProductName))
+                throw new ArgumentException("Product name is required");
+
+            if (dto.Price <= 0)
+                throw new ArgumentException("Price must be greater than zero");
+
+            if (dto.StockQuantity < 0)
+                throw new ArgumentException("Stock quantity cannot be negative");
+
+            var productExists = await _db.Products.AnyAsync(p =>
+                p.ProductName == dto.ProductName &&
+                p.UserId == userId
+            );
+
+            if (productExists)
+                throw new ArgumentException("Product already registered");
+
+            var productId = Guid.NewGuid();
+            string? imagePath = null;
+
+            if (dto.Image != null)
+            {
+                if (!dto.Image.ContentType.StartsWith("image/"))
+                    throw new ArgumentException("Invalid image format");
+
+                if (dto.Image.Length > 5 * 1024 * 1024)
+                    throw new ArgumentException("Image size cannot exceed 5MB");
+
+                var uploadsFolder = Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "wwwroot",
+                    "products"
+                );
+
+                Directory.CreateDirectory(uploadsFolder);
+
+                var extension = Path.GetExtension(dto.Image.FileName);
+                var fileName = $"{productId}{extension}";
+                var fullPath = Path.Combine(uploadsFolder, fileName);
+
+                using (var stream = new FileStream(fullPath, FileMode.Create))
+                {
+                    await dto.Image.CopyToAsync(stream);
+                }
+
+                imagePath = $"/products/{fileName}";
+            }
+
+            var product = new Product
+            {
+                Id = productId,
+                UserId = userId,
+                ProductName = dto.ProductName,
+                Category = dto.Category,
+                Price = dto.Price,
+                StockQuantity = dto.StockQuantity,
+                Image = imagePath,
+                CreatedAt = DateOnly.FromDateTime(DateTime.UtcNow)
+            };
+
+            product.BarCode = _barCodeServices.GenerateProductBarcode(productId);
+
+            _db.Products.Add(product);
+            await _db.SaveChangesAsync();
+        }
+
+
+        public async Task<Product> GetProductById(Guid id)
+        {
+            var userId = _currentUserServices.GetLoggedInUser();
+
+            var product = await _db.Products
+                .FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
+
+            if (product == null)
+            {
+                throw new ArgumentOutOfRangeException(nameof(product.ProductName), "Product not found");
+            }
+
+            return product;
+        }
+
+        public async Task ArchiveProductById(Guid id)
+        {
+            var userId = _currentUserServices.GetLoggedInUser();
+            var product = await _db.Products.FirstOrDefaultAsync(p => p.UserId == userId && p.Id == id);
+
+            if (product == null)
+            {
+                throw new ArgumentException(nameof(product.ProductName),
+                    "Product Not found");
+            }
+
+            _db.Products.Remove(product);
+
+            var Id = Guid.NewGuid();
+            var productSaveInArchive = new Archive
+            {
+                Id = Id,
+                ProductId = product.Id,
+                ProductName = product.ProductName,
+                Category = product.Category,
+                Price = product.Price,
+                StockQuantity = product.StockQuantity,
+                BarCode = product.BarCode,
+                CreatedAt = DateOnly.FromDateTime(DateTime.UtcNow)
+            };
+
+            _db.Archives.Add(productSaveInArchive);
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task UpdateProductById(ProductDTOs.UpdateProductDTOs _updateProductDTOs, Guid id)
+        {
+            var userId = _currentUserServices.GetLoggedInUser();
+            var product = await _db.Products.FirstOrDefaultAsync(p => p.UserId == userId && p.Id == id);
+
+            if (product == null)
+            {
+                throw new ArgumentException(nameof(_updateProductDTOs.ProductName),
+                     "Product Not found");
+            }
+
+            if (_updateProductDTOs.Price < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(_updateProductDTOs.Price),
+                    "Price cannot be negative");
+            }
+
+            product.ProductName = _updateProductDTOs.ProductName;
+            product.Category = _updateProductDTOs.Category;
+            product.Price = _updateProductDTOs.Price;
+            product.StockQuantity = _updateProductDTOs.StockQuantity;
+
+            await _db.SaveChangesAsync();
+
+        }
+    }
 }
