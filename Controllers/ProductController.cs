@@ -68,12 +68,10 @@ namespace Server.Controllers
             }
             catch (Exception ex)
             {
-                // 🔥 Log real error
                 Console.WriteLine(ex);
                 return StatusCode(500, new { error = ex.Message });
             }
         }
-
 
         [Authorize(Policy = "OwnerOnly")]
         [HttpPatch("{id}")]
@@ -85,10 +83,9 @@ namespace Server.Controllers
                 return Ok();
 
             }
-            catch (Exception)
+            catch (Exception e)
             {
-
-                throw;
+                return NotFound(new { error = e.Message });
             }
         }
 
