@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Scalar.AspNetCore;
 using Server.Data;
 using Server.Interface;
 using Server.Services;
@@ -17,8 +18,12 @@ builder.Services.AddScoped<CurrentUserServices>();
 builder.Services.AddScoped<BarCodeServices>();
 builder.Services.AddScoped<IUserInterface, UserServices>();
 builder.Services.AddScoped<IProductInterface, ProductServices>();
+builder.Services.AddScoped<ITransactionInterface, TransactionServices>();
 
 builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddOpenApi();
+
 builder.Services.AddSwaggerGen(option =>
 {
     option.SwaggerDoc("v1", new Microsoft.OpenApi.OpenApiInfo
@@ -71,6 +76,11 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference(options =>
+    {
+        options.Title = "Technoprenuership";
+        options.Theme = ScalarTheme.Default;
+    });
     app.UseSwagger();
     app.UseSwaggerUI();
 }
