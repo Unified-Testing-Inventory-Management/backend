@@ -62,16 +62,9 @@ public class TransactionServices : ITransactionInterface
 
     public async Task<List<Sale>> AllProductTransaction()
     {
-        var sales = await _db.Sales
+        return await _db.Sales
             .Include(s => s.SaleDetails)
             .OrderByDescending(s => s.SaleDate)
             .ToListAsync();
-
-        if (!sales.Any())
-        {
-            throw new ArgumentException("No sale products found");
-        }
-
-        return sales;
     }
 }
