@@ -9,14 +9,12 @@ namespace Server.Services
     public class ProductServices : IProductInterface
     {
         private readonly AppDbContext _db;
-        private readonly IHttpContextAccessor _httpContextAccessor;
         private CurrentUserServices _currentUserServices;
         private BarCodeServices _barCodeServices;
 
-        public ProductServices(AppDbContext db, IHttpContextAccessor httpContextAccessor, CurrentUserServices currentUserServices, BarCodeServices barCodeServices)
+        public ProductServices(AppDbContext db,CurrentUserServices currentUserServices, BarCodeServices barCodeServices)
         {
             _db = db;
-            _httpContextAccessor = httpContextAccessor;
             _currentUserServices = currentUserServices;
             _barCodeServices = barCodeServices;
         }
@@ -143,7 +141,7 @@ namespace Server.Services
             _db.Archives.Add(productSaveInArchive);
             await _db.SaveChangesAsync();
         }
-
+        
         public async Task UpdateProductById(ProductDTOs.UpdateProductDTOs _updateProductDTOs, Guid id)
         {
             var userId = _currentUserServices.GetLoggedInUser();
