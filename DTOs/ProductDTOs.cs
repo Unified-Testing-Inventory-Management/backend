@@ -21,5 +21,6 @@ public class ProductDTOs
         public required int Price { get; set; }
         [Range(0, int.MaxValue, ErrorMessage = "Stock quantity cannot be negative")]
         public required int StockQuantity { get; set; }
+        // public IFormFile Image { get; set; }
     }
 }
