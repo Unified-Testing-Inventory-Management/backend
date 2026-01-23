@@ -75,13 +75,12 @@ namespace Server.Controllers
 
         [Authorize(Policy = "OwnerOnly")]
         [HttpPatch("{id}")]
-        public async Task<IActionResult> UpdateProduct(Guid id, ProductDTOs.UpdateProductDTOs _updateProductDTOs)
+        public async Task<IActionResult> UpdateProduct(Guid id,[FromForm] ProductDTOs.UpdateProductDTOs _updateProductDTOs)
         {
             try
             {
                 await _productService.UpdateProductById(_updateProductDTOs, id);
-                return Ok();
-
+                return Ok(new {message = "Product update successfully"});
             }
             catch (Exception e)
             {
