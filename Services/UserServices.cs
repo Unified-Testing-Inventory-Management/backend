@@ -38,8 +38,8 @@ public class UserServices : IUserInterface
         var saveUser = new User
         {
             Id = Id,
-            FirstName = _registerUserDTOs.FirstName,
-            LastName = _registerUserDTOs.LastName,
+            FirstName = char.ToUpper(_registerUserDTOs.FirstName[0]) + _registerUserDTOs.FirstName.Substring(1).ToLower(),
+            LastName = char.ToUpper(_registerUserDTOs.LastName[0]) + _registerUserDTOs.LastName.Substring(1).ToLower(),
             Username = _registerUserDTOs.Username,
             Password = BCrypt.Net.BCrypt.HashPassword(_registerUserDTOs.Password),
             Role = _registerUserDTOs.Role,
