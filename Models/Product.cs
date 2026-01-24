@@ -11,7 +11,7 @@ public class Product
     public decimal Price { get; set; }
     public int StockQuantity { get; set; }
     public string? BarCode { get; set; }
-    public DateOnly CreatedAt { get; set; }
+    public DateTime CreatedAt { get; set; }
 
     public Guid? UserId { get; set; }
     [System.Text.Json.Serialization.JsonIgnore]
