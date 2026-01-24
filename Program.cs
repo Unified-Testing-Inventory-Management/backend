@@ -7,6 +7,7 @@ using Server.Data;
 using Server.Interface;
 using Server.Services;
 using System.Security.Claims;
+using System.Threading.RateLimiting;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -70,6 +71,20 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("OwnerOnly", policy => policy.RequireAuthenticatedUser().RequireClaim(ClaimTypes.Role, "Owner"));
 });
 
+// builder.Services.AddRateLimiter(options =>
+// {
+//     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+//         RateLimitPartition.GetFixedWindowLimiter(
+//             partitionKey: httpContext.User.Identity?.Name ?? httpContext.Request.Headers.Host.ToString(),
+//             factory: partition => new FixedWindowRateLimiterOptions
+//             {
+//                 AutoReplenishment = true,
+//                 PermitLimit = 10,
+//                 QueueLimit = 0,
+//                 Window = TimeSpan.FromMinutes(1)
+//             }));
+// });
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -106,6 +121,7 @@ app.MapGet("/weatherforecast", () =>
 })
 .WithName("GetWeatherForecast");
 
+// app.UseRateLimiter();
 app.UseCors("AllowSpecificOrigin");
 app.UseAuthentication();
 app.UseAuthorization();
