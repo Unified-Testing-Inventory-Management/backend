@@ -87,7 +87,7 @@ namespace Server.Services
                 Price = _createProductDtOs.Price,
                 StockQuantity = _createProductDtOs.StockQuantity,
                 Image = imagePath,
-                CreatedAt = DateOnly.FromDateTime(DateTime.UtcNow)
+                CreatedAt = DateTime.Now
             };
 
             product.BarCode = _barCodeServices.GenerateProductBarcode(productId);
