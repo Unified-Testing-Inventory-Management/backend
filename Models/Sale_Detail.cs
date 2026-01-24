@@ -13,5 +13,5 @@ public class Sale_Detail
     [System.Text.Json.Serialization.JsonIgnore]
     public Product? Product;
     public int Quantity { get; set; }
-    public float Price { get; set; }
+    public int Price { get; set; }
 }
