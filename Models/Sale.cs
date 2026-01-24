@@ -13,6 +13,6 @@ public class Sale
     public User? User;
 
     public DateOnly SaleDate { get; set; }
-    public float TotalAmount { get; set; }
+    public int TotalAmount { get; set; }
     public ICollection<Sale_Detail> SaleDetails { get; set; } = new  List<Sale_Detail>();
 }
