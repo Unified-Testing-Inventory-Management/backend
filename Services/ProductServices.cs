@@ -26,36 +26,36 @@ namespace Server.Services
             return await _db.Products.Where(p => p.UserId == userId).OrderByDescending(p => p.CreatedAt).ToListAsync();
         }
 
-        public async Task CreateProduct(ProductDTOs.CreateProductDTOs dto)
+        public async Task CreateProduct(ProductDTOs.CreateProductDTOs _createProductDtOs)
         {
             var userId = _currentUserServices.GetLoggedInUser();
 
-            if (string.IsNullOrWhiteSpace(dto.ProductName))
+            if (string.IsNullOrWhiteSpace(_createProductDtOs.ProductName))
                 throw new ArgumentException("Product name is required");
 
-            if (dto.Price <= 0)
-                throw new ArgumentException("Price must be greater than zero");
+            if (_createProductDtOs.Price <= 0)
+                throw new ArgumentException(nameof(_createProductDtOs.Price),"Price must be greater than zero");
 
-            if (dto.StockQuantity < 0)
-                throw new ArgumentException("Stock quantity cannot be negative");
+            if (_createProductDtOs.StockQuantity < 0)
+                throw new ArgumentException(nameof(_createProductDtOs.StockQuantity), "Stock quantity cannot be negative");
 
             var productExists = await _db.Products.AnyAsync(p =>
-                p.ProductName == dto.ProductName &&
+                p.ProductName == _createProductDtOs.ProductName &&
                 p.UserId == userId
             );
 
             if (productExists)
-                throw new ArgumentException("Product already registered");
+                throw new ArgumentException(nameof(_createProductDtOs.ProductName),"Product already registered");
 
             var productId = Guid.NewGuid();
             string? imagePath = null;
 
-            if (dto.Image != null)
+            if (_createProductDtOs.Image != null)
             {
-                if (!dto.Image.ContentType.StartsWith("image/"))
+                if (!_createProductDtOs.Image.ContentType.StartsWith("image/"))
                     throw new ArgumentException("Invalid image format");
 
-                if (dto.Image.Length > 5 * 1024 * 1024)
+                if (_createProductDtOs.Image.Length > 5 * 1024 * 1024)
                     throw new ArgumentException("Image size cannot exceed 5MB");
 
                 var uploadsFolder = Path.Combine(
@@ -66,13 +66,13 @@ namespace Server.Services
 
                 Directory.CreateDirectory(uploadsFolder);
 
-                var extension = Path.GetExtension(dto.Image.FileName);
+                var extension = Path.GetExtension(_createProductDtOs.Image.FileName);
                 var fileName = $"{productId}{extension}";
                 var fullPath = Path.Combine(uploadsFolder, fileName);
 
                 using (var stream = new FileStream(fullPath, FileMode.Create))
                 {
-                    await dto.Image.CopyToAsync(stream);
+                    await _createProductDtOs.Image.CopyToAsync(stream);
                 }
 
                 imagePath = $"/products/{fileName}";
@@ -82,10 +82,10 @@ namespace Server.Services
             {
                 Id = productId,
                 UserId = userId,
-                ProductName = dto.ProductName,
-                Category = dto.Category,
-                Price = dto.Price,
-                StockQuantity = dto.StockQuantity,
+                ProductName = char.ToUpper(_createProductDtOs.ProductName[0]) + _createProductDtOs.ProductName.Substring(1).ToLower(),
+                Category = char.ToUpper(_createProductDtOs.Category[0]) + _createProductDtOs.Category.Substring(1).ToLower(),
+                Price = _createProductDtOs.Price,
+                StockQuantity = _createProductDtOs.StockQuantity,
                 Image = imagePath,
                 CreatedAt = DateOnly.FromDateTime(DateTime.UtcNow)
             };
