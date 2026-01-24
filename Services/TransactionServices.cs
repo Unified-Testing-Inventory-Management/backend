@@ -23,13 +23,16 @@ public class TransactionServices : ITransactionInterface
         var productTransaction = await _db.Products.FirstOrDefaultAsync(p => p.UserId == userId && p.Id == _createSale.ProductId);
         
         if (productTransaction == null)
-        {
-            throw new ArgumentException("Product transaction not found");
-        }
+            throw new ArgumentException(nameof(_createSale.ProductName),"Product transaction not found");
 
-        var updateProductStock = (_createSale.Quantity - productTransaction.StockQuantity);
-        productTransaction.StockQuantity = updateProductStock;
-        
+        if (productTransaction.StockQuantity >= _createSale.Quantity)
+        {
+            productTransaction.StockQuantity -= _createSale.Quantity;
+        }
+        else
+        {
+            throw new InvalidOperationException("Not enough stock available");
+        }
 
         var saleId = Guid.NewGuid();
         var saleDetailId = Guid.NewGuid();
