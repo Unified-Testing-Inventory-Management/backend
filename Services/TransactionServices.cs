@@ -43,7 +43,7 @@ public class TransactionServices : ITransactionInterface
             Id = saleId,
             ProductId =_createSale.ProductId,
             UserId = userId,
-            SaleDate = DateOnly.FromDateTime(DateTime.UtcNow),
+            SaleDate = DateTime.Now,
             TotalAmount = totalAmount
         };
 
