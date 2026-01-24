@@ -12,7 +12,7 @@ public class Sale
     [System.Text.Json.Serialization.JsonIgnore]
     public User? User;
 
-    public DateOnly SaleDate { get; set; }
+    public DateTime SaleDate { get; set; }
     public int TotalAmount { get; set; }
     public ICollection<Sale_Detail> SaleDetails { get; set; } = new  List<Sale_Detail>();
 }
