@@ -51,6 +51,7 @@ public class TransactionServices : ITransactionInterface
         {
             Id = saleDetailId,
             ProductName = _createSale.ProductName,
+            Category = _createSale.Category,
             ProductId = saveProductSale.ProductId,
             SaleId = saveProductSale.Id,
             Price = _createSale.Price,
