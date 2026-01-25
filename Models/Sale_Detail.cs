@@ -6,6 +6,7 @@ public class Sale_Detail
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public string? ProductName { get; set; }
+    public string? Category { get; set; }
     public Guid SaleId { get; set; }
     [System.Text.Json.Serialization.JsonIgnore]
     public Sale? Sale;
