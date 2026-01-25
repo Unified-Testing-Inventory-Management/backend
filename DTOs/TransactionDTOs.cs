@@ -8,6 +8,7 @@ public class TransactionDTOs
     {
     public Guid ProductId { get; set; }
     public required string ProductName { get; set; }
+    public required string Category { get; set; }
     public Guid? UserId { get; set; }
     public int TotalAmount { get; set; }
     public int Quantity { get; set; }
