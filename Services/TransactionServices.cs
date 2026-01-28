@@ -71,4 +71,17 @@ public class TransactionServices : ITransactionInterface
             .OrderByDescending(s => s.SaleDate)
             .ToListAsync();
     }
+
+    public async Task<List<Sale>> SearchSaleProductTransaction(string productName)
+    {
+        var userId = _currentUserServices.GetLoggedInUser();
+        var query = _db.Sales.Where(sp => sp.UserId == userId).AsQueryable();
+        
+        if (!string.IsNullOrEmpty(productName))
+        {
+           query = query.Where(p  => p.SaleDetails.Any(s => s.ProductName == productName));
+        }
+        
+        return await query.ToListAsync();
+    }
 }
