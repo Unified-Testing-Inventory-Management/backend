@@ -87,7 +87,28 @@ namespace Server.Controllers
                 return NotFound(new { error = e.Message });
             }
         }
+        
+        [Authorize(Policy = "OwnerOnly")]
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchProducts(
+            [FromQuery] string productName)
+        {
+            if (string.IsNullOrWhiteSpace(productName))
+            {
+                return BadRequest(new { error = "Provide name to search" });
+            }
 
+            var products = await _productService.SearchProduct(productName);
+
+            return Ok(new
+            {
+                message = products.Any()
+                    ? "Products retrieved successfully"
+                    : "No products found",
+                data = products
+            });
+        }
+        
         [Authorize(Policy = "OwnerOnly")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> ArchiveProduct(Guid id)
