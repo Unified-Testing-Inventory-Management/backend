@@ -45,5 +45,27 @@ namespace Server.Controllers
             return NotFound(new {error = e.Message});
         }
     }
+
+    [Authorize(Policy = "OwnerOnly")]
+    [HttpGet("search")]
+    public async Task<IActionResult> SearchSaleProductTransaction(string productName)
+    {
+        try
+        {
+            var salesProduct = await _transactionServices.SearchSaleProductTransaction(productName);
+            return Ok(new
+            {
+                message = salesProduct.Any() ? "Sale Product Successfully" :
+                                                "Sale Product Not Found",
+                data = salesProduct
+            });
+        }
+        catch (Exception e)
+        {
+            return NotFound(new {error = e.Message});
+        }
+    }
+
+
     }
 }
