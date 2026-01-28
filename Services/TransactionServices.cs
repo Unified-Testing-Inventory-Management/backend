@@ -66,8 +66,9 @@ public class TransactionServices : ITransactionInterface
 
     public async Task<List<Sale>> AllProductTransaction()
     {
+        var  userId = _currentUserServices.GetLoggedInUser();
         return await _db.Sales
-            .Include(s => s.SaleDetails)
+            .Include(s => s.SaleDetails).Where(s => s.UserId == userId)
             .OrderByDescending(s => s.SaleDate)
             .ToListAsync();
     }
