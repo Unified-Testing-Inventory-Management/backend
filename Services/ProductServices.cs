@@ -112,6 +112,19 @@ namespace Server.Services
             return product;
         }
 
+        public async Task<List<Product>> SearchProduct(string productName)
+        {
+            var userId = _currentUserServices.GetLoggedInUser();
+            var query = _db.Products.Where(u => u.UserId == userId).AsQueryable();
+            
+            if (!string.IsNullOrEmpty(productName))
+            {
+                query = query.Where(p => EF.Functions.Like(p.ProductName, $"%{productName}%"));
+            }
+
+            return await query.ToListAsync();
+        }
+
         public async Task ArchiveProductById(Guid id)
         {
             var userId = _currentUserServices.GetLoggedInUser();
