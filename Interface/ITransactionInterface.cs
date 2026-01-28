@@ -7,4 +7,5 @@ public interface ITransactionInterface
 {
     Task CreateProductSale(TransactionDTOs.CreateProductSale _createSale);
     Task<List<Sale>> AllProductTransaction();
+    Task<List<Sale>> SearchSaleProductTransaction(string productName);
 }
