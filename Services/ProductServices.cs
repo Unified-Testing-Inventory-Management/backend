@@ -138,23 +138,25 @@ namespace Server.Services
 
             _db.Products.Remove(product);
 
+
             var Id = Guid.NewGuid();
             var productSaveInArchive = new Archive
             {
                 Id = Id,
                 ProductId = product.Id,
+                UserId = userId,
                 ProductName = product.ProductName,
                 Category = product.Category,
                 Price = product.Price,
                 StockQuantity = product.StockQuantity,
                 BarCode = product.BarCode,
-                CreatedAt = DateOnly.FromDateTime(DateTime.UtcNow)
+                DeletedAt = DateTime.Now
             };
 
             _db.Archives.Add(productSaveInArchive);
             await _db.SaveChangesAsync();
         }
-        
+
         public async Task UpdateProductById(ProductDTOs.UpdateProductDTOs _updateProductDTOs, Guid id)
         {
             var userId = _currentUserServices.GetLoggedInUser();
@@ -179,6 +181,52 @@ namespace Server.Services
 
             await _db.SaveChangesAsync();
 
+        }
+        
+        public async Task<List<Archive>> GetAllArchivesProduct()
+        {
+            var userId = _currentUserServices.GetLoggedInUser();
+            var productArchives = await _db.Archives.Where(a => a.UserId == userId).OrderByDescending(a => a.DeletedAt).ToListAsync();
+            return productArchives;
+        }
+
+        public async Task RestoreArchiveProduct(Guid id)
+        {
+            var userId = _currentUserServices.GetLoggedInUser();
+            var productArchive = await _db.Archives.FirstOrDefaultAsync(a => a.UserId == userId && a.ProductId == id);
+            if (productArchive == null)
+            {
+                throw new ArgumentException(nameof(productArchive.ProductName), "Archive not found");
+            }
+            _db.Archives.Remove(productArchive);
+            
+            var restoreProduct = new Product
+            {
+                Id = productArchive.ProductId,
+                UserId = productArchive.UserId,
+                ProductName = productArchive.ProductName,
+                Category = productArchive.Category,
+                Price = productArchive.Price,
+                StockQuantity = productArchive.StockQuantity,
+                BarCode = productArchive.BarCode,
+                CreatedAt = productArchive.DeletedAt
+            };
+            
+            _db.Products.Add(restoreProduct);
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task DeleteArchiveProduct(Guid id)
+        {
+            var userId = _currentUserServices.GetLoggedInUser();
+            var productArchive = await _db.Archives.FirstOrDefaultAsync(a => a.UserId == userId && a.ProductId == id);
+            if (productArchive == null)
+            {
+                throw new ArgumentException(nameof(productArchive.ProductName), "Archive not found");
+            }
+            _db.Archives.Remove(productArchive);
+            
+            await _db.SaveChangesAsync();
         }
     }
 }
