@@ -4,7 +4,7 @@ namespace Server.Models;
 
 public class Product
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid? Id { get; set; } = Guid.NewGuid();
     public string? Image { get; set; }
     public string? ProductName { get; set; }
     public string? Category { get; set; }
