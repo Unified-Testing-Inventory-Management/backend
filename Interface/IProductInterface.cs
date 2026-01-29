@@ -12,4 +12,7 @@ public interface IProductInterface
     Task<List<Product>> SearchProduct(string productName);
     Task UpdateProductById(ProductDTOs.UpdateProductDTOs _upddateProductDTOs, Guid id);
     Task ArchiveProductById(Guid id);
+    Task<List<Archive>>  GetAllArchivesProduct();
+    Task RestoreArchiveProduct(Guid id);
+    Task DeleteArchiveProduct(Guid id);
 }
