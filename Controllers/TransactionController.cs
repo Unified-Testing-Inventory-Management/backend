@@ -16,7 +16,7 @@ namespace Server.Controllers
         _transactionServices = transactionInterface;
     }
     
-    [Authorize(Policy = "OwnerOnly")]
+    [Authorize(Policy = "AdminPolicy")]
     [HttpPost]
     public async Task<IActionResult> CreateSale(TransactionDTOs.CreateProductSale _createSale)
     {
@@ -31,7 +31,7 @@ namespace Server.Controllers
         }
     }
 
-    [Authorize(Policy = "OwnerOnly")]
+    [Authorize(Policy = "AdminPolicy")]
     [HttpGet]
     public async Task<IActionResult> GetAllProductSale()
     {
@@ -46,7 +46,7 @@ namespace Server.Controllers
         }
     }
 
-    [Authorize(Policy = "OwnerOnly")]
+    [Authorize(Policy = "AdminPolicy")]
     [HttpGet("search")]
     public async Task<IActionResult> SearchSaleProductTransaction(string productName)
     {

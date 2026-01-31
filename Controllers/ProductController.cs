@@ -16,7 +16,7 @@ namespace Server.Controllers
             _productService = productService;
         }
 
-        [Authorize(Policy = "OwnerOnly")]
+        [Authorize(Policy = "AdminPolicy")]
         [HttpGet]
         public async Task<IActionResult> GetAllProducts()
         {
@@ -32,7 +32,7 @@ namespace Server.Controllers
             }
         }
 
-        [Authorize(Policy = "OwnerPolicy")]
+        [Authorize(Policy = "AdminPolicy")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetProductById(Guid id)
         {
@@ -48,7 +48,7 @@ namespace Server.Controllers
             }
         }
 
-        [Authorize(Policy = "OwnerOnly")]
+        [Authorize(Policy = "AdminPolicy")]
         [HttpPost]
         [RequestSizeLimit(10_000_000)]
         [RequestFormLimits(MultipartBodyLengthLimit = 10_000_000)]
@@ -75,7 +75,7 @@ namespace Server.Controllers
             }
         }
 
-        [Authorize(Policy = "OwnerOnly")]
+        [Authorize(Policy = "AdminPolicy")]
         [HttpPatch("{id}")]
         public async Task<IActionResult> UpdateProduct(Guid id,[FromForm] ProductDTOs.UpdateProductDTOs _updateProductDTOs)
         {
@@ -91,7 +91,7 @@ namespace Server.Controllers
             }
         }
         
-        [Authorize(Policy = "OwnerOnly")]
+        [Authorize(Policy = "AdminPolicy")]
         [HttpGet("search")]
         public async Task<IActionResult> SearchProducts(
             [FromQuery] string productName)
@@ -112,7 +112,7 @@ namespace Server.Controllers
             });
         }
         
-        [Authorize(Policy = "OwnerOnly")]
+        [Authorize(Policy = "AdminPolicy")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> ArchiveProduct(Guid id)
         {
@@ -128,7 +128,25 @@ namespace Server.Controllers
             }
         }
 
-        [Authorize(Policy = "OwnerOnly")]
+        [Authorize(Policy = "AdminPolicy")]
+        [HttpGet("archive/search")]
+        public async Task<IActionResult> SearchArchiveProduct([FromQuery] string productName)
+        {
+            if (string.IsNullOrWhiteSpace(productName))
+            {
+                return BadRequest(new { error = "Provide name to search" });
+            }
+
+            var product = await _productService.SearchArchiveProduct(productName);
+
+            return Ok(new { messsage = product.Any() ? 
+                "Archive retrieved successfully" 
+                : "Archive not found",
+                data = product
+            });
+        }
+
+        [Authorize(Policy = "AdminPolicy")]
         [HttpDelete("archive/{id}/restore")]
         public async Task<IActionResult> RestoreProduct(Guid id)
         {
@@ -144,7 +162,7 @@ namespace Server.Controllers
             }
         }
         
-        [Authorize(Policy = "OwnerOnly")]
+        [Authorize(Policy = "AdminPolicy")]
         [HttpGet("archive")]
         public async Task<IActionResult> GetAllArchivesProduct()
         {
@@ -157,7 +175,7 @@ namespace Server.Controllers
                 });
         }
 
-        [Authorize(Policy = "OwnerOnly")]
+        [Authorize(Policy = "AdminPolicy")]
         [HttpDelete("archive/{id}")]
         public async Task<IActionResult> GetArchiveProductById(Guid id)
         {

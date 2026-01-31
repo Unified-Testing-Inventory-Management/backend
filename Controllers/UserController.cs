@@ -18,7 +18,7 @@ namespace Server.Controllers
             _userServices = userServices;
         }
 
-        [Authorize(Policy = "OwnerOnly")]
+        [Authorize(Policy = "AdminPolicy")]
         [HttpGet("me")]
         public async Task<IActionResult> GetMe()
         {
@@ -66,7 +66,7 @@ namespace Server.Controllers
             }
         }
 
-        [Authorize(Policy = "OwnerOnly")]
+        [Authorize(Policy = "AdminPolicy")]
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
