@@ -68,7 +68,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("OwnerOnly", policy => policy.RequireAuthenticatedUser().RequireClaim(ClaimTypes.Role, "Owner"));
+    options.AddPolicy("AdminPolicy", policy => policy.RequireAuthenticatedUser().RequireClaim(ClaimTypes.Role, "Admin"));
 });
 
 // builder.Services.AddRateLimiter(options =>
