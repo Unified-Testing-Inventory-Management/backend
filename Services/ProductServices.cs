@@ -157,6 +157,19 @@ namespace Server.Services
             await _db.SaveChangesAsync();
         }
 
+        public Task<List<Archive>> SearchArchiveProduct(string productName)
+        {
+            var userId = _currentUserServices.GetLoggedInUser();
+            var query = _db.Archives.Where(ap => ap.UserId == userId).AsQueryable();
+            
+            if (!string.IsNullOrEmpty(productName))
+            {
+                query = query.Where(ap => EF.Functions.Like(ap.ProductName, $"%{productName}%"));
+            }
+
+            return query.ToListAsync();
+        }
+
         public async Task UpdateProductById(ProductDTOs.UpdateProductDTOs _updateProductDTOs, Guid id)
         {
             var userId = _currentUserServices.GetLoggedInUser();
