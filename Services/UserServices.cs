@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Server.Data;
 using Server.DTOs;
+using Server.Exceptions;
 using Server.Interface;
 using Server.Models;
 
@@ -29,9 +30,7 @@ public class UserServices : IUserInterface
     {
         var user = _db.Users.FirstOrDefault(c => c.Username == _registerUserDTOs.Username);
         if (user != null)
-        {
-            throw new Exception("User already exists");
-        }
+            throw new UserExceptions.UserAlreadyExists(_registerUserDTOs.Username);
 
         var Id = Guid.NewGuid();
 
@@ -55,7 +54,7 @@ public class UserServices : IUserInterface
         var user = await _db.Users.FirstOrDefaultAsync(c => c.Username == _loginUserDTOs.Username);
 
         if (user == null || !BCrypt.Net.BCrypt.Verify(_loginUserDTOs.Password, user.Password))
-            throw new UnauthorizedAccessException("Username or password is incorrect");
+            throw new UserExceptions.UnAuthorizedUserException();
 
         var claims = new[]
         {
