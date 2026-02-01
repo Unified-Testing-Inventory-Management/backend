@@ -23,7 +23,6 @@ builder.Services.AddScoped<ITransactionInterface, TransactionServices>();
 
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddOpenApi();
 
 builder.Services.AddSwaggerGen(option =>
 {
