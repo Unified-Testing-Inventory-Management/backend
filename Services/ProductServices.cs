@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Server.Data;
 using Server.DTOs;
+using Server.Exceptions;
 using Server.Interface;
 using Server.Models;
 
@@ -34,18 +35,22 @@ namespace Server.Services
                 throw new ArgumentException("Product name is required");
 
             if (_createProductDtOs.Price <= 0)
-                throw new ArgumentException(nameof(_createProductDtOs.Price),"Price must be greater than zero");
+                throw new ProductExceptions.InvalidProductPriceException();
 
             if (_createProductDtOs.StockQuantity < 0)
-                throw new ArgumentException(nameof(_createProductDtOs.StockQuantity), "Stock quantity cannot be negative");
-
-            var productExists = await _db.Products.AnyAsync(p =>
+                throw new ProductExceptions.InvalidStockQuantityException();
+            
+            var productInArchive = await _db.Archives.FirstOrDefaultAsync(p => p.ProductName == _createProductDtOs.ProductName && p.UserId == userId);
+            var productExists = await _db.Products.FirstOrDefaultAsync(p =>
                 p.ProductName == _createProductDtOs.ProductName &&
                 p.UserId == userId
             );
 
-            if (productExists)
-                throw new ArgumentException(nameof(_createProductDtOs.ProductName),"Product already registered");
+            if (productExists != null)
+                throw new ProductExceptions.ProductAlreadyExists(productExists.ProductName!);
+            
+            if(productInArchive != null)
+                throw new ProductExceptions.ProductAlreadyExists(productInArchive.ProductName!);
 
             var productId = Guid.NewGuid();
             string? imagePath = null;
@@ -96,7 +101,6 @@ namespace Server.Services
             await _db.SaveChangesAsync();
         }
 
-
         public async Task<Product> GetProductById(Guid id)
         {
             var userId = _currentUserServices.GetLoggedInUser();
@@ -106,7 +110,7 @@ namespace Server.Services
 
             if (product == null)
             {
-                throw new ArgumentOutOfRangeException(nameof(product.ProductName), "Product not found");
+                throw new ProductExceptions.ProductNotFoundException(id);
             }
 
             return product;
@@ -132,12 +136,10 @@ namespace Server.Services
 
             if (product == null)
             {
-                throw new ArgumentException(nameof(product.ProductName),
-                    "Product Not found");
+                throw new ProductExceptions.ProductNotFoundException(id);
             }
-
+            
             _db.Products.Remove(product);
-
 
             var Id = Guid.NewGuid();
             var productSaveInArchive = new Archive
@@ -177,14 +179,12 @@ namespace Server.Services
 
             if (product == null)
             {
-                throw new ArgumentException(nameof(_updateProductDTOs.ProductName),
-                     "Product Not found");
+                throw new ProductExceptions.ProductNotFoundException(id);
             }
 
             if (_updateProductDTOs.Price < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(_updateProductDTOs.Price),
-                    "Price cannot be negative");
+                throw new ProductExceptions.InvalidProductPriceException();
             }
 
             product.ProductName = _updateProductDTOs.ProductName;
@@ -209,7 +209,7 @@ namespace Server.Services
             var productArchive = await _db.Archives.FirstOrDefaultAsync(a => a.UserId == userId && a.ProductId == id);
             if (productArchive == null)
             {
-                throw new ArgumentException(nameof(productArchive.ProductName), "Archive not found");
+                throw new ProductExceptions.ProductNotFoundException(id);
             }
             _db.Archives.Remove(productArchive);
             
@@ -235,7 +235,7 @@ namespace Server.Services
             var productArchive = await _db.Archives.FirstOrDefaultAsync(a => a.UserId == userId && a.ProductId == id);
             if (productArchive == null)
             {
-                throw new ArgumentException(nameof(productArchive.ProductName), "Archive not found");
+                throw new ProductExceptions.ProductNotFoundException(id);
             }
             _db.Archives.Remove(productArchive);
             
