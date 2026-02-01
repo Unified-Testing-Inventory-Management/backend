@@ -1,7 +1,9 @@
+using System.Transactions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Server.DTOs;
 using Server.Interface;
+using Server.Exceptions;
 
 namespace Server.Controllers
 {
@@ -25,9 +27,15 @@ namespace Server.Controllers
             await _transactionServices.CreateProductSale(_createSale);
             return Ok(new {message = "Transaction Successfully"});
         }
-        catch (Exception e)
+        catch (TransactionExceptions.ProductInTrasactionNotFoundException e)
         {
-            return NotFound( new { error = e.Message } );
+            Console.WriteLine(e.Message);
+            return StatusCode(404, new { error = e.Message });
+        }
+        catch (TransactionExceptions.NotEnoughStockException e)
+        {
+            Console.WriteLine(e.Message);
+            return StatusCode(402, new { error = e.Message } );
         }
     }
 
@@ -42,7 +50,7 @@ namespace Server.Controllers
         }
         catch (Exception e)
         {
-            return NotFound(new {error = e.Message});
+            return StatusCode(500,new {error = e.Message});
         }
     }
 
@@ -62,7 +70,7 @@ namespace Server.Controllers
         }
         catch (Exception e)
         {
-            return NotFound(new {error = e.Message});
+            return StatusCode(500,new {error = e.Message});
         }
     }
 
