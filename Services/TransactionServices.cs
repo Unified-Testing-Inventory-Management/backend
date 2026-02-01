@@ -1,6 +1,8 @@
+using System.Transactions;
 using Microsoft.EntityFrameworkCore;
 using Server.Data;
 using Server.DTOs;
+using Server.Exceptions;
 using Server.Interface;
 using Server.Models;
 
@@ -21,17 +23,17 @@ public class TransactionServices : ITransactionInterface
     {
         var userId = _currentUserServices.GetLoggedInUser();
         var productTransaction = await _db.Products.FirstOrDefaultAsync(p => p.UserId == userId && p.Id == _createSale.ProductId);
-        
-        if (productTransaction == null)
-            throw new ArgumentException(nameof(_createSale.ProductName),"Product transaction not found");
 
+        if (productTransaction == null)
+            throw new TransactionExceptions.ProductInTrasactionNotFoundException(_createSale.ProductName);
+        
         if (productTransaction.StockQuantity >= _createSale.Quantity)
         {
             productTransaction.StockQuantity -= _createSale.Quantity;
         }
         else
         {
-            throw new InvalidOperationException("Not enough stock available");
+            throw new TransactionExceptions.NotEnoughStockException(_createSale.ProductName);
         }
 
         var saleId = Guid.NewGuid();
