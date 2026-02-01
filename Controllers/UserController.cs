@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Server.DTOs;
 using Server.Interface;
 using System.Security.Claims;
+using Server.Exceptions;
 
 namespace Server.Controllers
 {
@@ -44,9 +45,9 @@ namespace Server.Controllers
                 await _userServices.RegisterUser(_registerUserDTOs);
                 return Ok();
             }
-            catch (Exception e)
+            catch (UserExceptions.UserAlreadyExists e)
             {
-                return Conflict(new { error = e.Message });
+                return StatusCode(409, new { error = e.Message });
             }
         }
 
@@ -60,7 +61,7 @@ namespace Server.Controllers
 
                 return Ok(new { message = "Login successful" });
             }
-            catch (UnauthorizedAccessException e)
+            catch (UserExceptions.UnAuthorizedUserException e)
             {
                 return Unauthorized(new { error = e.Message });
             }
