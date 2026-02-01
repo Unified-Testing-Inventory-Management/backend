@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Server.DTOs;
+using Server.Exceptions;
 using Server.Interface;
 
 namespace Server.Controllers
@@ -20,16 +21,8 @@ namespace Server.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllProducts()
         {
-            try
-            {
-                var products = await _productService.GetAllProducts();
-                return Ok(new { message = "Products retrieved successfully", data = products });
-            }
-            catch (Exception)
-            {
-                Console.WriteLine(new{error = "An unexpected error occurred."});
-                return StatusCode(500, new { error = "An unexpected error occurred." });
-            }
+            var products = await _productService.GetAllProducts();
+            return Ok(new { message = "Products retrieved successfully", data = products });
         }
 
         [Authorize(Policy = "AdminPolicy")]
@@ -41,7 +34,7 @@ namespace Server.Controllers
                 var product = await _productService.GetProductById(id);
                 return Ok(new { message = "Product retrieved successfully", data = product });
             }
-            catch (Exception e)
+            catch (ProductExceptions.ProductNotFoundException e)
             {
                 Console.WriteLine(new{error = e.Message});
                 return NotFound(new { error = e.Message });
@@ -64,15 +57,20 @@ namespace Server.Controllers
                 await _productService.CreateProduct(dto);
                 return Ok(new { message = "Product added successfully" });
             }
-            catch (ArgumentException ex)
+            catch (ProductExceptions.InvalidProductPriceException e)
             {
-                return BadRequest(new { error = ex.Message });
+                return BadRequest(new { error = e.Message });
             }
-            catch (Exception e)
+            catch (ProductExceptions.InvalidStockQuantityException e)
+            {
+                return BadRequest(new { error = e.Message });
+            }
+            catch (ProductExceptions.ProductAlreadyExists e)
             {
                 Console.WriteLine(new{error = e.Message});
-                return StatusCode(500, new { error = e.Message });
+                return Conflict(new { error = e.Message });
             }
+            
         }
 
         [Authorize(Policy = "AdminPolicy")]
@@ -84,7 +82,12 @@ namespace Server.Controllers
                 await _productService.UpdateProductById(_updateProductDTOs, id);
                 return Ok(new {message = "Product update successfully"});
             }
-            catch (Exception e)
+            catch (ProductExceptions.InvalidProductPriceException e)
+            {
+                Console.WriteLine(new{error = e.Message});
+                return NotFound(new { error = e.Message });
+            }
+            catch (ProductExceptions.ProductNotFoundException e)
             {
                 Console.WriteLine(new{error = e.Message});
                 return NotFound(new { error = e.Message });
@@ -121,7 +124,7 @@ namespace Server.Controllers
                 await _productService.ArchiveProductById(id);
                 return Ok(new { message = "Product archived successfully" });
             }
-            catch (Exception e)
+            catch (ProductExceptions.ProductNotFoundException e)
             {
                 Console.WriteLine(new{error = e.Message});
                 return NotFound(new { error = e.Message });
@@ -155,7 +158,7 @@ namespace Server.Controllers
                 await _productService.RestoreArchiveProduct(id);
                 return Ok(new { message = "Product restored successfully" });
             }
-            catch (Exception e)
+            catch (ProductExceptions.ProductNotFoundException e)
             {
                 Console.WriteLine(new{error = e.Message});
                 return NotFound(new {error = e.Message });
@@ -177,7 +180,7 @@ namespace Server.Controllers
 
         [Authorize(Policy = "AdminPolicy")]
         [HttpDelete("archive/{id}")]
-        public async Task<IActionResult> GetArchiveProductById(Guid id)
+        public async Task<IActionResult> DeleteArchiveProductById(Guid id)
         {
             try
             {
