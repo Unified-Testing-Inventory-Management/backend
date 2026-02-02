@@ -12,6 +12,7 @@ public class Product
     public int StockQuantity { get; set; }
     public string? BarCode { get; set; }
     public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
 
     public Guid? UserId { get; set; }
     [System.Text.Json.Serialization.JsonIgnore]
