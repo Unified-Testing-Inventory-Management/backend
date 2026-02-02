@@ -13,7 +13,7 @@ namespace Server.Services
         private CurrentUserServices _currentUserServices;
         private BarCodeServices _barCodeServices;
 
-        public ProductServices(AppDbContext db,CurrentUserServices currentUserServices, BarCodeServices barCodeServices)
+        public ProductServices(AppDbContext db, CurrentUserServices currentUserServices, BarCodeServices barCodeServices)
         {
             _db = db;
             _currentUserServices = currentUserServices;
@@ -39,7 +39,7 @@ namespace Server.Services
 
             if (_createProductDtOs.StockQuantity < 0)
                 throw new ProductExceptions.InvalidStockQuantityException();
-            
+
             var productInArchive = await _db.Archives.FirstOrDefaultAsync(p => p.ProductName == _createProductDtOs.ProductName && p.UserId == userId);
             var productExists = await _db.Products.FirstOrDefaultAsync(p =>
                 p.ProductName == _createProductDtOs.ProductName &&
@@ -48,8 +48,8 @@ namespace Server.Services
 
             if (productExists != null)
                 throw new ProductExceptions.ProductAlreadyExists(productExists.ProductName!);
-            
-            if(productInArchive != null)
+
+            if (productInArchive != null)
                 throw new ProductExceptions.ProductAlreadyExists(productInArchive.ProductName!);
 
             var productId = Guid.NewGuid();
@@ -92,7 +92,8 @@ namespace Server.Services
                 Price = _createProductDtOs.Price,
                 StockQuantity = _createProductDtOs.StockQuantity,
                 Image = imagePath,
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now
             };
 
             product.BarCode = _barCodeServices.GenerateProductBarcode(productId);
@@ -120,7 +121,7 @@ namespace Server.Services
         {
             var userId = _currentUserServices.GetLoggedInUser();
             var query = _db.Products.Where(u => u.UserId == userId).AsQueryable();
-            
+
             if (!string.IsNullOrEmpty(productName))
             {
                 query = query.Where(p => EF.Functions.Like(p.ProductName, $"%{productName}%"));
@@ -138,7 +139,7 @@ namespace Server.Services
             {
                 throw new ProductExceptions.ProductNotFoundException(id);
             }
-            
+
             _db.Products.Remove(product);
 
             var Id = Guid.NewGuid();
@@ -152,6 +153,8 @@ namespace Server.Services
                 Price = product.Price,
                 StockQuantity = product.StockQuantity,
                 BarCode = product.BarCode,
+                CreatedAt = product.CreatedAt,
+                UpdatedAt = product.UpdatedAt,
                 DeletedAt = DateTime.Now
             };
 
@@ -163,7 +166,7 @@ namespace Server.Services
         {
             var userId = _currentUserServices.GetLoggedInUser();
             var query = _db.Archives.Where(ap => ap.UserId == userId).AsQueryable();
-            
+
             if (!string.IsNullOrEmpty(productName))
             {
                 query = query.Where(ap => EF.Functions.Like(ap.ProductName, $"%{productName}%"));
@@ -191,11 +194,12 @@ namespace Server.Services
             product.Category = _updateProductDTOs.Category;
             product.Price = _updateProductDTOs.Price;
             product.StockQuantity = _updateProductDTOs.StockQuantity;
+            product.UpdatedAt = DateTime.Now;
 
             await _db.SaveChangesAsync();
 
         }
-        
+
         public async Task<List<Archive>> GetAllArchivesProduct()
         {
             var userId = _currentUserServices.GetLoggedInUser();
@@ -212,7 +216,7 @@ namespace Server.Services
                 throw new ProductExceptions.ProductNotFoundException(id);
             }
             _db.Archives.Remove(productArchive);
-            
+
             var restoreProduct = new Product
             {
                 Id = productArchive.ProductId,
@@ -222,9 +226,10 @@ namespace Server.Services
                 Price = productArchive.Price,
                 StockQuantity = productArchive.StockQuantity,
                 BarCode = productArchive.BarCode,
-                CreatedAt = productArchive.DeletedAt
+                CreatedAt = productArchive.CreatedAt,
+                UpdatedAt = productArchive.UpdatedAt
             };
-            
+
             _db.Products.Add(restoreProduct);
             await _db.SaveChangesAsync();
         }
@@ -238,7 +243,7 @@ namespace Server.Services
                 throw new ProductExceptions.ProductNotFoundException(id);
             }
             _db.Archives.Remove(productArchive);
-            
+
             await _db.SaveChangesAsync();
         }
     }
