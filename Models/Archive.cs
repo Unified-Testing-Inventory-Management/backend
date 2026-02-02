@@ -13,6 +13,8 @@ public class Archive
     public decimal Price { get; set; }
     public int StockQuantity { get; set; }
     public string? BarCode { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
     public DateTime DeletedAt { get; set; }
 
     public Guid? UserId { get; set; }
