@@ -3,6 +3,7 @@
 PROJECT = Server
 
 list:
+	@echo "Available commands:"
 	@echo "build     - Compiles your project and checks for any build errors."
 	@echo "run       - Runs your application using the specified project."
 	@echo "restore   - Restores all NuGet packages required by your project."
