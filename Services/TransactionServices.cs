@@ -8,7 +8,7 @@ using Server.Models;
 
 namespace Server.Services;
 
-public class TransactionServices : ITransactionInterface
+public class TransactionServices : ITransactionService
 {
     private readonly AppDbContext _db;
     private readonly CurrentUserServices _currentUserServices;
