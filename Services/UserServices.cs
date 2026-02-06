@@ -14,7 +14,7 @@ using Server.Models;
 
 namespace Server.Services;
 
-public class UserServices : IUserInterface
+public class UserServices : IUserService
 {
     private readonly IConfiguration _config;
     private readonly AppDbContext _db;
