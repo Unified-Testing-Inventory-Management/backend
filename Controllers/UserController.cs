@@ -10,14 +10,9 @@ namespace Server.Controllers
 {
     [Route("api/v1/users/auth")]
     [ApiController]
-    public class UserController : ControllerBase
+    public class UserController(IUserService userServices) : ControllerBase
     {
-        private readonly IUserInterface _userServices;
-
-        public UserController(IUserInterface userServices)
-        {
-            _userServices = userServices;
-        }
+        private readonly IUserService _userServices = userServices;
 
         [Authorize(Policy = "AdminPolicy")]
         [HttpGet("me")]
