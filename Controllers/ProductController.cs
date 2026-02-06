@@ -9,13 +9,9 @@ namespace Server.Controllers
 {
     [Route("api/v1/products")]
     [ApiController]
-    public class ProductController : ControllerBase
+    public class ProductController(IProductService productService) : ControllerBase
     {
-        private readonly IProductInterface _productService;
-        public ProductController(IProductInterface productService)
-        {
-            _productService = productService;
-        }
+        private readonly IProductService _productService = productService;
 
         [Authorize(Policy = "AdminPolicy")]
         [HttpGet]
@@ -155,7 +151,7 @@ namespace Server.Controllers
         {
             try
             {
-                await _productService.RestoreArchiveProduct(id);
+                await _productService.RestoreArchiveInProduct(id);
                 return Ok(new { message = "Product restored successfully" });
             }
             catch (ProductExceptions.ProductNotFoundException e)
@@ -169,7 +165,7 @@ namespace Server.Controllers
         [HttpGet("archive")]
         public async Task<IActionResult> GetAllArchivesProduct()
         {
-            var archives = await _productService.GetAllArchivesProduct();
+            var archives = await _productService.GetAllArchiveProducts();
             return Ok(new 
                 { message = archives.Any() 
                     ? "Archive retrieved successfully" 
@@ -184,7 +180,7 @@ namespace Server.Controllers
         {
             try
             {
-                await _productService.DeleteArchiveProduct(id);
+                await _productService.DeleteProductInArchive(id);
                 return Ok(new { message = "Archive deleted successfully" });
             }
             catch (Exception e)
