@@ -9,15 +9,10 @@ namespace Server.Controllers
 {
     [Route("api/v1/transactions")]
     [ApiController]
-    public class TransactionController : ControllerBase
+    public class TransactionController(ITransactionService transactionInterface) : ControllerBase
     {
-    private readonly ITransactionInterface _transactionServices;
-    
-    public TransactionController(ITransactionInterface transactionInterface)
-    {
-        _transactionServices = transactionInterface;
-    }
-    
+    private readonly ITransactionService _transactionServices = transactionInterface;
+
     [Authorize(Policy = "AdminPolicy")]
     [HttpPost]
     public async Task<IActionResult> CreateSale(TransactionDTOs.CreateProductSale _createSale)
