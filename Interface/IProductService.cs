@@ -6,6 +6,7 @@ namespace Server.Interface;
 
 public interface IProductService
 {
+    Task ImportExcelProduct(IFormFile file);
     Task<List<Product>> GetAllProducts();
     Task CreateProduct(ProductDTOs.CreateProductDTOs _createProductDTOs);
     Task<Product?> GetProductById(Guid id);
