@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using OfficeOpenXml;
 using Scalar.AspNetCore;
 using Server.Data;
 using Server.Interface;
@@ -16,12 +17,18 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddControllers();
+
+//Services
 builder.Services.AddScoped<CurrentUserServices>();
 builder.Services.AddScoped<BarCodeServices>();
+builder.Services.AddScoped<GenerateImageServices>();
 builder.Services.AddScoped<IUserService, UserServices>();
 builder.Services.AddScoped<IProductService, ProductServices>();
-builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<ITransactionService, TransactionServices>();
+
+//Repositories
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 
 builder.Services.AddOpenApi();
@@ -86,6 +93,8 @@ builder.Services.AddAuthorization(options =>
 //                 Window = TimeSpan.FromMinutes(1)
 //             }));
 // });
+
+ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
 var app = builder.Build();
 
