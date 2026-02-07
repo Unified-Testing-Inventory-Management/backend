@@ -22,6 +22,7 @@ builder.Services.AddScoped<IUserService, UserServices>();
 builder.Services.AddScoped<IProductService, ProductServices>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<ITransactionService, TransactionServices>();
+builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
