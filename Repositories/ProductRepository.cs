@@ -4,12 +4,14 @@ using Server.Data;
 using Server.DTOs;
 using Server.Interface;
 using Server.Models;
+using Server.Services;
 
 namespace Server.Repositories;
 
-public class ProductRepository(AppDbContext appDb) : IProductRepository
+public class ProductRepository(AppDbContext appDb, BarCodeServices barCodeServices) : IProductRepository
 {
     private readonly AppDbContext _db = appDb;
+    private readonly BarCodeServices _barCodeServices = barCodeServices;
 
     public async Task<List<Product>> GetAllProducts(Guid userId)
     {
@@ -60,8 +62,23 @@ public class ProductRepository(AppDbContext appDb) : IProductRepository
         return await _db.Archives.FirstOrDefaultAsync(p => p.ProductName == productName && p.UserId == userId);
     }
 
-    public async Task SaveProduct(Product product)
+    public async Task SaveProduct(Guid userId, string imagePath, ProductDTOs.CreateProductDTOs _createProductDTOs)
     {
+        var productId = Guid.NewGuid();
+        var product = new Product
+        {
+            Id = productId,
+            UserId = userId,
+            ProductName = char.ToUpper(_createProductDTOs.ProductName[0]) + _createProductDTOs.ProductName.Substring(1).ToLower(),
+            Category = char.ToUpper(_createProductDTOs.Category[0]) + _createProductDTOs.Category.Substring(1).ToLower(),
+            Price = _createProductDTOs.Price,
+            StockQuantity = _createProductDTOs.StockQuantity,
+            Image = imagePath,
+            CreatedAt = DateTime.Now,
+            UpdatedAt = DateTime.Now,
+            BarCode = _barCodeServices.GenerateProductBarcode(productId)
+        };
+
         _db.Products.Add(product);
         await _db.SaveChangesAsync();
     }
@@ -131,6 +148,27 @@ public class ProductRepository(AppDbContext appDb) : IProductRepository
     public async Task DeleteProductInArchive(Archive archive)
     {
         _db.Archives.Remove(archive);
+        await _db.SaveChangesAsync();
+    }
+
+    public async Task SaveProductFromExcelImport(Guid userId, string productName, string category, int price, int stockQuantity)
+    {
+        var Id = Guid.NewGuid();
+        var barCode = _barCodeServices.GenerateProductBarcode(Id);
+
+        var product = new Product
+        {
+            Id = Id,
+            UserId = userId,
+            ProductName = productName,
+            Category = category,
+            Price = price,
+            StockQuantity = stockQuantity,
+            BarCode = barCode,
+            CreatedAt = DateTime.Now,
+            UpdatedAt = DateTime.Now
+        };
+        _db.Products.Add(product);
         await _db.SaveChangesAsync();
     }
 }
