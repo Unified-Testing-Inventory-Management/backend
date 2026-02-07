@@ -32,7 +32,7 @@ namespace Server.Controllers
             }
             catch (ProductExceptions.ProductNotFoundException e)
             {
-                Console.WriteLine(new{error = e.Message});
+                Console.WriteLine(new { error = e.Message });
                 return NotFound(new { error = e.Message });
             }
         }
@@ -63,33 +63,33 @@ namespace Server.Controllers
             }
             catch (ProductExceptions.ProductAlreadyExists e)
             {
-                Console.WriteLine(new{error = e.Message});
+                Console.WriteLine(new { error = e.Message });
                 return Conflict(new { error = e.Message });
             }
-            
+
         }
 
         [Authorize(Policy = "AdminPolicy")]
         [HttpPatch("{id}")]
-        public async Task<IActionResult> UpdateProduct(Guid id,[FromForm] ProductDTOs.UpdateProductDTOs _updateProductDTOs)
+        public async Task<IActionResult> UpdateProduct(Guid id, [FromForm] ProductDTOs.UpdateProductDTOs _updateProductDTOs)
         {
             try
             {
                 await _productService.UpdateProductById(_updateProductDTOs, id);
-                return Ok(new {message = "Product update successfully"});
+                return Ok(new { message = "Product update successfully" });
             }
             catch (ProductExceptions.InvalidProductPriceException e)
             {
-                Console.WriteLine(new{error = e.Message});
+                Console.WriteLine(new { error = e.Message });
                 return NotFound(new { error = e.Message });
             }
             catch (ProductExceptions.ProductNotFoundException e)
             {
-                Console.WriteLine(new{error = e.Message});
+                Console.WriteLine(new { error = e.Message });
                 return NotFound(new { error = e.Message });
             }
         }
-        
+
         [Authorize(Policy = "AdminPolicy")]
         [HttpGet("search")]
         public async Task<IActionResult> SearchProducts(
@@ -110,7 +110,7 @@ namespace Server.Controllers
                 data = products
             });
         }
-        
+
         [Authorize(Policy = "AdminPolicy")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> ArchiveProduct(Guid id)
@@ -122,7 +122,7 @@ namespace Server.Controllers
             }
             catch (ProductExceptions.ProductNotFoundException e)
             {
-                Console.WriteLine(new{error = e.Message});
+                Console.WriteLine(new { error = e.Message });
                 return NotFound(new { error = e.Message });
             }
         }
@@ -138,8 +138,10 @@ namespace Server.Controllers
 
             var product = await _productService.SearchArchiveProduct(productName);
 
-            return Ok(new { messsage = product.Any() ? 
-                "Archive retrieved successfully" 
+            return Ok(new
+            {
+                messsage = product.Any() ?
+                "Archive retrieved successfully"
                 : "Archive not found",
                 data = product
             });
@@ -156,22 +158,23 @@ namespace Server.Controllers
             }
             catch (ProductExceptions.ProductNotFoundException e)
             {
-                Console.WriteLine(new{error = e.Message});
-                return NotFound(new {error = e.Message });
+                Console.WriteLine(new { error = e.Message });
+                return NotFound(new { error = e.Message });
             }
         }
-        
+
         [Authorize(Policy = "AdminPolicy")]
         [HttpGet("archive")]
         public async Task<IActionResult> GetAllArchivesProduct()
         {
             var archives = await _productService.GetAllArchiveProducts();
-            return Ok(new 
-                { message = archives.Any() 
-                    ? "Archive retrieved successfully" 
+            return Ok(new
+            {
+                message = archives.Any()
+                    ? "Archive retrieved successfully"
                     : "Archives not found",
-                    data = archives
-                });
+                data = archives
+            });
         }
 
         [Authorize(Policy = "AdminPolicy")]
@@ -189,6 +192,21 @@ namespace Server.Controllers
                 return NotFound(new { error = e.Message });
             }
         }
-        
+
+        [Authorize(Policy = "AdminPolicy")]
+        [HttpPost("import-excel")]
+        public async Task<IActionResult> ImportExcelProduct(IFormFile file)
+        {
+            try
+            {
+                await _productService.ImportExcelProduct(file);
+                return Ok(new { message = "Import product successfully" });
+            }
+            catch (System.Exception e)
+            {
+                return BadRequest(new { error = e.Message });
+            }
+        }
+
     }
 }
