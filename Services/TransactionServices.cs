@@ -26,22 +26,18 @@ public class TransactionServices(ITransactionRepository transactionRepository, C
             throw new TransactionExceptions.NotEnoughStockException(_createSale.ProductName);
         }
 
-        var saleId = Guid.NewGuid();
-        var saleDetailId = Guid.NewGuid();
         var totalAmount = _createSale.Quantity * _createSale.Price;
 
-        var saveProductSale = await _transactionRepository.SaveProductInSale(userId, saleId, totalAmount, _createSale.ProductId);
+        var saveProductSale = await _transactionRepository.SaveProductInSale(userId, totalAmount, _createSale.ProductId);
 
-        await _transactionRepository.SaveProductInSaleDetails(saleDetailId, saveProductSale.Id, saveProductSale.ProductId, _createSale);
+        await _transactionRepository.SaveProductInSaleDetails(saveProductSale.Id, saveProductSale.ProductId, _createSale);
 
     }
-
     public async Task<List<Sale>> AllProductTransaction()
     {
         var userId = _currentUserServices.GetLoggedInUser();
         return await _transactionRepository.AllProductTransactions(userId);
     }
-
     public async Task<List<Sale>> SearchSaleProductTransaction(string productName)
     {
         var userId = _currentUserServices.GetLoggedInUser();
