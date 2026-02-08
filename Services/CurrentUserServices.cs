@@ -12,9 +12,7 @@ public class CurrentUserServices
     }
     public Guid GetLoggedInUser()
     {
-        var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier);
-        if (userIdClaim == null)
-            throw new UnauthorizedAccessException("User is not authenticated");
+        var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier) ?? throw new UnauthorizedAccessException("User is not authenticated");
 
         return Guid.Parse(userIdClaim.Value);
     }
