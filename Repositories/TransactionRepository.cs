@@ -24,8 +24,9 @@ public class TransactionRepository(AppDbContext appDb) : ITransactionRepository
         return await _db.Products.FirstOrDefaultAsync(p => p.UserId == userId && p.Id == id);
     }
 
-    public async Task<Sale> SaveProductInSale(Guid userId, Guid saleId, int totalAmount, Guid productId)
+    public async Task<Sale> SaveProductInSale(Guid userId, int totalAmount, Guid productId)
     {
+        var saleId = Guid.NewGuid();
         var saveProductInSale = new Sale
         {
             Id = saleId,
@@ -41,8 +42,9 @@ public class TransactionRepository(AppDbContext appDb) : ITransactionRepository
         return saveProductInSale;
     }
 
-    public async Task SaveProductInSaleDetails(Guid saleDetailId, Guid saleId, Guid productId, TransactionDTOs.CreateProductSale createProductSale)
+    public async Task SaveProductInSaleDetails(Guid saleId, Guid productId, TransactionDTOs.CreateProductSale createProductSale)
     {
+        var saleDetailId = Guid.NewGuid();
         var saleProductDetails = new Sale_Detail
         {
             Id = saleDetailId,
