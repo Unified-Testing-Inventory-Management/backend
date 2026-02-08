@@ -14,44 +14,22 @@ using Server.Models;
 
 namespace Server.Services;
 
-public class UserServices : IUserService
+public class UserServices(IHttpContextAccessor httpContextAccessor, IUserRepository userRepository) : IUserService
 {
-    private readonly IConfiguration _config;
-    private readonly AppDbContext _db;
-    private readonly IHttpContextAccessor _ihttpContextAccessor;
-    public UserServices(IConfiguration configuration, AppDbContext appDb, IHttpContextAccessor httpContextAccessor)
-    {
-        _config = configuration;
-        _db = appDb;
-        _ihttpContextAccessor = httpContextAccessor;
-    }
-
+    private readonly IHttpContextAccessor _ihttpContextAccessor = httpContextAccessor;
+    private readonly IUserRepository _userRepository = userRepository;
     public async Task RegisterUser(UserDTOs.RegisterUserDTOs _registerUserDTOs)
     {
-        var user = _db.Users.FirstOrDefault(c => c.Username == _registerUserDTOs.Username);
-        if (user != null)
+        var user = await _userRepository.GetUser(_registerUserDTOs.Username);
+
+        if (user is not null)
             throw new UserExceptions.UserAlreadyExists(_registerUserDTOs.Username);
 
-        var Id = Guid.NewGuid();
-
-        var saveUser = new User
-        {
-            Id = Id,
-            FirstName = char.ToUpper(_registerUserDTOs.FirstName[0]) + _registerUserDTOs.FirstName.Substring(1).ToLower(),
-            LastName = char.ToUpper(_registerUserDTOs.LastName[0]) + _registerUserDTOs.LastName.Substring(1).ToLower(),
-            Username = _registerUserDTOs.Username,
-            Password = BCrypt.Net.BCrypt.HashPassword(_registerUserDTOs.Password),
-            Role = _registerUserDTOs.Role,
-            CreatedAt = DateOnly.FromDateTime(DateTime.Now)
-        };
-
-        await _db.Users.AddAsync(saveUser);
-        await _db.SaveChangesAsync();
+        await _userRepository.SaveUser(_registerUserDTOs);
     }
-
     public async Task LoginUser(UserDTOs.LoginUserDTOs _loginUserDTOs)
     {
-        var user = await _db.Users.FirstOrDefaultAsync(c => c.Username == _loginUserDTOs.Username);
+        var user = await _userRepository.GetUser(_loginUserDTOs.Username);
 
         if (user == null || !BCrypt.Net.BCrypt.Verify(_loginUserDTOs.Password, user.Password))
             throw new UserExceptions.UnAuthorizedUserException();
@@ -71,15 +49,11 @@ public class UserServices : IUserService
             principal
         );
     }
-
-    public Task<User?> GetUserById(string? userId)
+    public async Task<User?> GetUserById(string? userId)
     {
-        if (userId == null)
-        {
-            return Task.FromResult<User?>(null);
-        }
+        if (userId is null)        
+            return await Task.FromResult<User?>(null);
 
-        var user = _db.Users.FirstOrDefault(u => u.Id.ToString() == userId);
-        return Task.FromResult(user);
+         return await _userRepository.GetUserId(userId);
     }
 }
