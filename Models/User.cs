@@ -9,7 +9,7 @@ public class User
     public string? LastName { get; set; }
     public string? Username { get; set; }
     public string? Password { get; set; }
-    public string? Role { get; set; } // Owner
+    public string? Role { get; set; } // Admin
     public DateOnly CreatedAt { get; set; }
 
     public ICollection<Product> Products {get;set;} = new List<Product>();
