@@ -38,11 +38,14 @@ namespace Server.Controllers
             try
             {
                 await _userServices.RegisterUser(_registerUserDTOs);
-                return Ok();
+
+                Console.WriteLine(new { message = "Registered user successfully", status = 201 });
+                return Ok(new { Message = "Registered user successfully" });
             }
             catch (UserExceptions.UserAlreadyExists e)
             {
-                return StatusCode(409, new { error = e.Message });
+                Console.WriteLine(new { error = e.Message, status = e.StatusCode });
+                return Conflict(new { error = e.Message, status = e.StatusCode });
             }
         }
 
@@ -52,13 +55,37 @@ namespace Server.Controllers
             try
             {
                 await _userServices.LoginUser(_loginUserDTOs);
-                Console.WriteLine("Login successful");
 
-                return Ok(new { message = "Login successful" });
+                Console.WriteLine(new { message = "Logout successfully", status = 201 });
+                return Ok(new { message = "Login successfully", status = 201 });
             }
             catch (UserExceptions.UnAuthorizedUserException e)
             {
-                return Unauthorized(new { error = e.Message });
+                Console.WriteLine(new { error = e.Message, status = e.StatusCode });
+                return Unauthorized(new { error = e.Message, status = e.StatusCode });
+            }
+        }
+
+        [Authorize(Policy = "AdminPolicy")]
+        [HttpPatch("update-profile")]
+        public async Task<IActionResult> UpdateUser(UserDTOs.UpdateUserDTOs _updateUserDTOs)
+        {
+            try
+            {
+                await _userServices.UpdateUser(_updateUserDTOs);
+
+                Console.WriteLine(new { message = "User updated successfully", status = 201 });
+                return Ok(new { message = "User updated successfully", status = 201 });
+            }
+            catch (UserExceptions.UserNotFoundException e)
+            {
+                Console.WriteLine(new { error = e.Message, status = e.StatusCode });
+                return NotFound(new { error = e.Message, status = e.StatusCode });
+            }
+            catch (UserExceptions.UserAlreadyExists e)
+            {
+                Console.WriteLine(new { error = e.Message, status = e.StatusCode });
+                return Conflict(new { error = e.Message, status = e.StatusCode });
             }
         }
 
@@ -67,7 +94,9 @@ namespace Server.Controllers
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync();
-            return Ok(new { message = "Logout successful" });
+
+            Console.WriteLine(new { message = "Logout successfully", status = 201 });
+            return Ok(new { message = "Logout successfully" });
         }
     }
 }
