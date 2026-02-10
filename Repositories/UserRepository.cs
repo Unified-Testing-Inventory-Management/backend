@@ -10,12 +10,18 @@ namespace Server.Repositories;
 public class UserRepository(AppDbContext appDb) : IUserRepository
 {
     private readonly AppDbContext _db = appDb;
+
+    public async Task<User?> FindUserById(Guid userId)
+    {
+        return await _db.Users.FirstOrDefaultAsync(c => c.Id == userId);
+    }
+
     public async Task<User?> GetUser(string username)
     {
         return await _db.Users.FirstOrDefaultAsync(c => c.Username == username);
     }
 
-    public async Task<User?> GetUserId(string userId)
+    public async Task<User?> GetUserId(string? userId)
     {
         return await _db.Users.FirstOrDefaultAsync(u => u.Id.ToString() == userId);
     }
@@ -31,11 +37,20 @@ public class UserRepository(AppDbContext appDb) : IUserRepository
             LastName = char.ToUpper(_registerUserDTOs.LastName[0]) + _registerUserDTOs.LastName.Substring(1).ToLower(),
             Username = _registerUserDTOs.Username,
             Password = BCrypt.Net.BCrypt.HashPassword(_registerUserDTOs.Password),
-            Role = _registerUserDTOs.Role,
+            Role = "Admin",
             CreatedAt = DateOnly.FromDateTime(DateTime.Now)
         };
 
         await _db.Users.AddAsync(saveUser);
+        await _db.SaveChangesAsync();
+    }
+
+    public async Task UpdateUser(User user, UserDTOs.UpdateUserDTOs _updateUserDTOs)
+    {
+        user.FirstName = _updateUserDTOs.FirstName;
+        user.LastName = _updateUserDTOs.LastName;
+        user.Username = _updateUserDTOs.Username;
+
         await _db.SaveChangesAsync();
     }
 }
