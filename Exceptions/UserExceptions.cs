@@ -2,18 +2,38 @@ namespace Server.Exceptions;
 
 public class UserExceptions
 {
-    public class UserAlreadyExists : Exception
+    public class UserAlreadyExists(string message, int status) : Exception
     {
-        public string Username { get; set; }
 
-        public UserAlreadyExists(string username) : base($"{username} is already exists")
+        override
+        public string Message
+        { get; } = message;
+        public int StatusCode { get; set; } = status;
+    }
+
+    public class UnAuthorizedUserException : Exception
+    {
+        override
+        public string Message
+        { get; }
+        public int StatusCode { get; set; }
+        public UnAuthorizedUserException(string message, int status)
         {
-            Username = username;
+            Message = message;
+            StatusCode = status;
         }
     }
 
-    public class UnAuthorizedUserException: Exception
+    public class UserNotFoundException : Exception
     {
-        public UnAuthorizedUserException() : base("Username or password is incorrect") { }
+        override
+        public string Message
+        { get; }
+        public int StatusCode { get; set; }
+        public UserNotFoundException(string message, int status)
+        {
+            Message = message;
+            StatusCode = status;
+        }
     }
 }
