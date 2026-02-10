@@ -18,6 +18,7 @@ namespace Server.Services
             var userId = _currentUserServices.GetLoggedInUser();
             return await _productRepositories.GetAllProducts(userId);
         }
+
         public async Task CreateProduct(ProductDTOs.CreateProductDTOs _createProductDtOs)
         {
             var userId = _currentUserServices.GetLoggedInUser();
@@ -26,71 +27,79 @@ namespace Server.Services
                 throw new ArgumentException("Product name is required");
 
             if (_createProductDtOs.Price <= 0)
-                throw new ProductExceptions.InvalidProductPriceException();
+                throw new ProductExceptions.InvalidProductPriceException("Product price cannot be negative", 400);
 
             if (_createProductDtOs.StockQuantity < 0)
-                throw new ProductExceptions.InvalidStockQuantityException();
+                throw new ProductExceptions.InvalidStockQuantityException("Product stock cannot be negative", 400);
 
             var productInArchive = await _productRepositories.GetProductNameInArchive(_createProductDtOs.ProductName, userId);
             var product = await _productRepositories.GetProductNameInProduct(_createProductDtOs.ProductName, userId);
 
             if (product is not null)
-                throw new ProductExceptions.ProductAlreadyExists(product.ProductName!);
+                throw new ProductExceptions.ProductAlreadyExists($"Product name {_createProductDtOs.ProductName} already exists", 409);
 
             if (productInArchive is not null)
-                throw new ProductExceptions.ProductAlreadyExists(productInArchive.ProductName!);
+                throw new ProductExceptions.ProductAlreadyExists($"Product name {_createProductDtOs.ProductName} already exists", 409);
 
             var imagePath = await _generateImageServices.Generate(_createProductDtOs);
 
             await _productRepositories.SaveProduct(userId, imagePath!, _createProductDtOs);
         }
+
         public async Task<Product?> GetProductById(Guid id)
         {
             var userId = _currentUserServices.GetLoggedInUser();
-            var product = _productRepositories.GetProductById(userId, id) ?? throw new ProductExceptions.ProductNotFoundException(id);
+            var product = _productRepositories.GetProductById(userId, id) ?? throw new ProductExceptions.ProductNotFoundException($"Product Id {userId} not found", 404);
             return await product;
         }
+
         public async Task<List<Product>> SearchProduct(string productName)
         {
             var userId = _currentUserServices.GetLoggedInUser();
             return await _productRepositories.SearchNameInProduct(userId, productName);
         }
+
         public async Task ArchiveProductById(Guid id)
         {
             var userId = _currentUserServices.GetLoggedInUser();
-            var product = await _productRepositories.GetProductById(userId, id) ?? throw new ProductExceptions.ProductNotFoundException(id);
+            var product = await _productRepositories.GetProductById(userId, id) ?? throw new ProductExceptions.ProductNotFoundException($"Product Id {userId} not found", 404);
             await _productRepositories.SaveProductInArchive(userId, product);
         }
+
         public async Task<List<Archive>> SearchArchiveProduct(string productName)
         {
             var userId = _currentUserServices.GetLoggedInUser();
             return await _productRepositories.SearchNameInArchive(userId, productName);
         }
+
         public async Task UpdateProductById(ProductDTOs.UpdateProductDTOs _updateProductDTOs, Guid id)
         {
             var userId = _currentUserServices.GetLoggedInUser();
-            var product = await _productRepositories.GetProductById(userId, id) ?? throw new ProductExceptions.ProductNotFoundException(id);
+            var product = await _productRepositories.GetProductById(userId, id) ?? throw new ProductExceptions.ProductNotFoundException($"Product Id {userId} not found", 404);
 
             if (_updateProductDTOs.Price < 0)
-                throw new ProductExceptions.InvalidProductPriceException();
+                throw new ProductExceptions.InvalidProductPriceException("Product price cannot be negative", 400);
 
             await _productRepositories.UpdateProduct(_updateProductDTOs, product);
         }
+
         public async Task<List<Archive>> GetAllArchiveProducts()
         {
             var userId = _currentUserServices.GetLoggedInUser();
             return await _productRepositories.GetAllArchiveProducts(userId);
         }
+
         public async Task RestoreArchiveInProduct(Guid id)
         {
             var userId = _currentUserServices.GetLoggedInUser();
-            var productArchive = await _productRepositories.GetProductArchiveById(userId, id) ?? throw new ProductExceptions.ProductNotFoundException(id);
+            var productArchive = await _productRepositories.GetProductArchiveById(userId, id) ?? throw new ProductExceptions.ProductNotFoundException($"Product Id {userId} not found", 404);
             await _productRepositories.RestoreProductInArchive(userId, productArchive);
         }
+
         public async Task DeleteProductInArchive(Guid id)
         {
             var userId = _currentUserServices.GetLoggedInUser();
-            var productArchive = await _productRepositories.GetProductArchiveById(userId, id) ?? throw new ProductExceptions.ProductNotFoundException(id);
+            var productArchive = await _productRepositories.GetProductArchiveById(userId, id) ?? throw new ProductExceptions.ProductNotFoundException($"Product Id {userId} not found", 404);
             await _productRepositories.DeleteProductInArchive(productArchive);
         }
 
