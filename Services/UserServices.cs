@@ -1,11 +1,8 @@
 using System;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Server.Data;
 using Server.DTOs;
 using Server.Exceptions;
@@ -14,16 +11,20 @@ using Server.Models;
 
 namespace Server.Services;
 
-public class UserServices(IHttpContextAccessor httpContextAccessor, IUserRepository userRepository) : IUserService
+public class UserServices(AppDbContext appDb, IHttpContextAccessor httpContextAccessor, IUserRepository userRepository, CurrentUserServices currentUserServices) : IUserService
 {
+
+    private readonly AppDbContext _db = appDb;
+
     private readonly IHttpContextAccessor _ihttpContextAccessor = httpContextAccessor;
     private readonly IUserRepository _userRepository = userRepository;
+    private readonly CurrentUserServices _currentServices = currentUserServices;
     public async Task RegisterUser(UserDTOs.RegisterUserDTOs _registerUserDTOs)
     {
         var user = await _userRepository.GetUser(_registerUserDTOs.Username);
 
         if (user is not null)
-            throw new UserExceptions.UserAlreadyExists(_registerUserDTOs.Username);
+            throw new UserExceptions.UserAlreadyExists($"{_registerUserDTOs.Username} is already exists", 409);
 
         await _userRepository.SaveUser(_registerUserDTOs);
     }
@@ -32,7 +33,7 @@ public class UserServices(IHttpContextAccessor httpContextAccessor, IUserReposit
         var user = await _userRepository.GetUser(_loginUserDTOs.Username);
 
         if (user == null || !BCrypt.Net.BCrypt.Verify(_loginUserDTOs.Password, user.Password))
-            throw new UserExceptions.UnAuthorizedUserException();
+            throw new UserExceptions.UnAuthorizedUserException("Username or password is incorrect", 401);
 
         var claims = new[]
         {
@@ -51,9 +52,14 @@ public class UserServices(IHttpContextAccessor httpContextAccessor, IUserReposit
     }
     public async Task<User?> GetUserById(string? userId)
     {
-        if (userId is null)        
-            return await Task.FromResult<User?>(null);
+        return await _userRepository.GetUserId(userId) ?? await Task.FromResult<User?>(null); ;
+    }
+    public async Task UpdateUser(UserDTOs.UpdateUserDTOs _updateUserDTOs)
+    {
+        var userId = _currentServices.GetLoggedInUser();
+        var user = await _userRepository.FindUserById(userId) ?? throw new UserExceptions.UserNotFoundException($"User Id {userId} not found", 404);
 
-         return await _userRepository.GetUserId(userId);
+        await _userRepository.UpdateUser(user, _updateUserDTOs);
+
     }
 }
