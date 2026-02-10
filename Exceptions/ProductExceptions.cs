@@ -2,31 +2,35 @@ namespace Server.Exceptions;
 
 public class ProductExceptions
 {
-    public class ProductAlreadyExists : Exception
+    public class ProductAlreadyExists(string message, int status) : Exception
     {
-        public string ProductName { get;}
-        public ProductAlreadyExists(string productName):base($"Product '{productName}' already exists")
-        {
-            ProductName = productName;
-        }
-    }
-    
-    public class ProductNotFoundException : Exception
-    {
-        public Guid ProductId { get; }
-        public ProductNotFoundException(Guid productId) : base($"Product id '{productId}' not found")
-        {
-            ProductId = productId;
-        }
+        override
+        public string Message
+        { get; } = message;
+        public int StatusCode { get; set; } = status;
     }
 
-    public class InvalidProductPriceException : Exception
+    public class ProductNotFoundException(string message, int status) : Exception
     {
-        public InvalidProductPriceException() : base($"Price must be greater than zero") { }
+        override
+        public string Message
+        { get; } = message;
+        public int StatusCode { get; set; } = status;
     }
 
-    public class InvalidStockQuantityException : Exception
+    public class InvalidProductPriceException(string message, int status) : Exception
     {
-        public InvalidStockQuantityException() : base("Stock quantity cannot be negative") { }
+        override
+        public string Message
+        { get; } = message;
+        public int StatusCode { get; set; } = status;
+    }
+
+    public class InvalidStockQuantityException(string message, int status) : Exception
+    {
+        override
+        public string Message
+        { get; } = message;
+        public int StatusCode { get; set; } = status;
     }
 }
