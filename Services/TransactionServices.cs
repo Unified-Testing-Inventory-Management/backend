@@ -15,7 +15,7 @@ public class TransactionServices(ITransactionRepository transactionRepository, C
     public async Task CreateProductSale(TransactionDTOs.CreateProductSale _createSale)
     {
         var userId = _currentUserServices.GetLoggedInUser();
-        var productTransaction = await _transactionRepository.GetProductById(userId, _createSale.ProductId) ?? throw new TransactionExceptions.ProductInTrasactionNotFoundException(_createSale.ProductName);
+        var productTransaction = await _transactionRepository.GetProductById(userId, _createSale.ProductId) ?? throw new TransactionExceptions.ProductInTransactionNotFoundException($"Product {_createSale.ProductName} not found for transaction", 404);
 
         if (productTransaction.StockQuantity >= _createSale.Quantity)
         {
@@ -23,7 +23,7 @@ public class TransactionServices(ITransactionRepository transactionRepository, C
         }
         else
         {
-            throw new TransactionExceptions.NotEnoughStockException(_createSale.ProductName);
+            throw new TransactionExceptions.NotEnoughStockException($"Not enough stock in transaction product {_createSale.ProductName}", 400);
         }
 
         var totalAmount = _createSale.Quantity * _createSale.Price;
