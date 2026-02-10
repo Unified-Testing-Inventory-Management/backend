@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Server.DTOs;
 using Server.Exceptions;
@@ -18,7 +17,9 @@ namespace Server.Controllers
         public async Task<IActionResult> GetAllProducts()
         {
             var products = await _productService.GetAllProducts();
-            return Ok(new { message = "Products retrieved successfully", data = products });
+
+            Console.WriteLine(new { message = "Products retrieved successfully", status = 200, data = products });
+            return Ok(new { message = "Products retrieved successfully", status = 200, data = products });
         }
 
         [Authorize(Policy = "AdminPolicy")]
@@ -28,12 +29,12 @@ namespace Server.Controllers
             try
             {
                 var product = await _productService.GetProductById(id);
-                return Ok(new { message = "Product retrieved successfully", data = product });
+                return Ok(new { message = "Product retrieved successfully", status = 200, data = product });
             }
             catch (ProductExceptions.ProductNotFoundException e)
             {
-                Console.WriteLine(new { error = e.Message });
-                return NotFound(new { error = e.Message });
+                Console.WriteLine(new { error = e.Message, status = e.StatusCode });
+                return NotFound(new { error = e.Message, status = e.StatusCode });
             }
         }
 
@@ -55,16 +56,18 @@ namespace Server.Controllers
             }
             catch (ProductExceptions.InvalidProductPriceException e)
             {
-                return BadRequest(new { error = e.Message });
+                Console.WriteLine(new { error = e.Message, status = e.StatusCode });
+                return BadRequest(new { error = e.Message, status = e.StatusCode });
             }
             catch (ProductExceptions.InvalidStockQuantityException e)
             {
-                return BadRequest(new { error = e.Message });
+                Console.WriteLine(new { error = e.Message, status = e.StatusCode });
+                return BadRequest(new { error = e.Message, status = e.StatusCode });
             }
             catch (ProductExceptions.ProductAlreadyExists e)
             {
-                Console.WriteLine(new { error = e.Message });
-                return Conflict(new { error = e.Message });
+                Console.WriteLine(new { error = e.Message, status = e.StatusCode });
+                return Conflict(new { error = e.Message, status = e.StatusCode });
             }
 
         }
@@ -80,13 +83,13 @@ namespace Server.Controllers
             }
             catch (ProductExceptions.InvalidProductPriceException e)
             {
-                Console.WriteLine(new { error = e.Message });
-                return NotFound(new { error = e.Message });
+                Console.WriteLine(new { error = e.Message, status = e.StatusCode });
+                return NotFound(new { error = e.Message, status = e.StatusCode });
             }
             catch (ProductExceptions.ProductNotFoundException e)
             {
-                Console.WriteLine(new { error = e.Message });
-                return NotFound(new { error = e.Message });
+                Console.WriteLine(new { error = e.Message, status = e.StatusCode });
+                return NotFound(new { error = e.Message, status = e.StatusCode });
             }
         }
 
@@ -118,12 +121,14 @@ namespace Server.Controllers
             try
             {
                 await _productService.ArchiveProductById(id);
-                return Ok(new { message = "Product archived successfully" });
+
+                Console.WriteLine(new { message = "Product archived successfully", status = 201 });
+                return Ok(new { message = "Product archived successfully", status = 201 });
             }
             catch (ProductExceptions.ProductNotFoundException e)
             {
-                Console.WriteLine(new { error = e.Message });
-                return NotFound(new { error = e.Message });
+                Console.WriteLine(new { error = e.Message, status = e.StatusCode });
+                return NotFound(new { error = e.Message, status = e.StatusCode });
             }
         }
 
@@ -154,12 +159,12 @@ namespace Server.Controllers
             try
             {
                 await _productService.RestoreArchiveInProduct(id);
-                return Ok(new { message = "Product restored successfully" });
+                return Ok(new { message = "Product restored successfully", status = 201 });
             }
             catch (ProductExceptions.ProductNotFoundException e)
             {
-                Console.WriteLine(new { error = e.Message });
-                return NotFound(new { error = e.Message });
+                Console.WriteLine(new { error = e.Message, status = e.StatusCode });
+                return NotFound(new { error = e.Message, status = e.StatusCode });
             }
         }
 
@@ -168,11 +173,21 @@ namespace Server.Controllers
         public async Task<IActionResult> GetAllArchivesProduct()
         {
             var archives = await _productService.GetAllArchiveProducts();
+
+            Console.WriteLine(new
+            {
+                message = archives.Any()
+                    ? "Archive retrieved successfully"
+                    : "Archives not found",
+                status = 200,
+                data = archives
+            });
             return Ok(new
             {
                 message = archives.Any()
                     ? "Archive retrieved successfully"
                     : "Archives not found",
+                status = 200,
                 data = archives
             });
         }
@@ -184,12 +199,12 @@ namespace Server.Controllers
             try
             {
                 await _productService.DeleteProductInArchive(id);
-                return Ok(new { message = "Archive deleted successfully" });
+                return Ok(new { message = "Archive deleted successfully", status = 201 });
             }
-            catch (Exception e)
+            catch (ProductExceptions.ProductNotFoundException e)
             {
-                Console.WriteLine(e.Message);
-                return NotFound(new { error = e.Message });
+                Console.WriteLine(new { error = e.Message, status = e.StatusCode });
+                return NotFound(new { error = e.Message, status = e.StatusCode });
             }
         }
 
@@ -200,11 +215,12 @@ namespace Server.Controllers
             try
             {
                 await _productService.ImportExcelProduct(file);
-                return Ok(new { message = "Import product successfully" });
+                return Ok(new { message = "Import product successfully", status = 201 });
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
-                return BadRequest(new { error = e.Message });
+                Console.WriteLine(new { error = e.Message, status = 404 });
+                return BadRequest(new { error = e.Message, status = 404 });
             }
         }
 
