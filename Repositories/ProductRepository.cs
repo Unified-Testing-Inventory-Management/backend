@@ -13,20 +13,14 @@ public class ProductRepository(AppDbContext appDb, BarCodeServices barCodeServic
     private readonly AppDbContext _db = appDb;
     private readonly BarCodeServices _barCodeServices = barCodeServices;
 
-    public async Task<List<Product>> GetAllProducts(Guid userId)
-    {
-        return await _db.Products.Where(p => p.UserId == userId).OrderByDescending(p => p.CreatedAt).ToListAsync();
-    }
+    public async Task<List<Product>> GetAllProducts(Guid userId) =>
+        await _db.Products.Where(p => p.UserId == userId).OrderByDescending(p => p.CreatedAt).ToListAsync();
 
-    public async Task<Product?> GetProductById(Guid userId, Guid id)
-    {
-        return await _db.Products.FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
-    }
+    public async Task<Product?> GetProductById(Guid userId, Guid id) =>
+        await _db.Products.FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
 
-    public async Task<Archive?> GetProductArchiveById(Guid userId, Guid id)
-    {
-        return await _db.Archives.FirstOrDefaultAsync(a => a.UserId == userId && a.ProductId == id);
-    }
+    public async Task<Archive?> GetProductArchiveById(Guid userId, Guid id) =>
+        await _db.Archives.FirstOrDefaultAsync(a => a.UserId == userId && a.ProductId == id);
 
     public async Task<List<Product>> SearchNameInProduct(Guid userId, string productName)
     {
@@ -52,15 +46,11 @@ public class ProductRepository(AppDbContext appDb, BarCodeServices barCodeServic
         return await query.ToListAsync();
     }
 
-    public async Task<Product?> GetProductNameInProduct(string productName, Guid userId)
-    {
-        return await _db.Products.FirstOrDefaultAsync(p => p.ProductName == productName && p.UserId == userId);
-    }
+    public async Task<Product?> GetProductNameInProduct(string productName, Guid userId) =>
+        await _db.Products.FirstOrDefaultAsync(p => p.ProductName == productName && p.UserId == userId);
 
-    public async Task<Archive?> GetProductNameInArchive(string productName, Guid userId)
-    {
-        return await _db.Archives.FirstOrDefaultAsync(p => p.ProductName == productName && p.UserId == userId);
-    }
+    public async Task<Archive?> GetProductNameInArchive(string productName, Guid userId) =>
+        await _db.Archives.FirstOrDefaultAsync(p => p.ProductName == productName && p.UserId == userId);
 
     public async Task SaveProduct(Guid userId, string imagePath, ProductDTOs.CreateProductDTOs _createProductDTOs)
     {
@@ -119,10 +109,8 @@ public class ProductRepository(AppDbContext appDb, BarCodeServices barCodeServic
         await _db.SaveChangesAsync();
     }
 
-    public async Task<List<Archive>> GetAllArchiveProducts(Guid userId)
-    {
-        return await _db.Archives.Where(a => a.UserId == userId).OrderByDescending(a => a.DeletedAt).ToListAsync();
-    }
+    public async Task<List<Archive>> GetAllArchiveProducts(Guid userId) =>
+        await _db.Archives.Where(a => a.UserId == userId).OrderByDescending(a => a.DeletedAt).ToListAsync();
 
     public async Task RestoreProductInArchive(Guid userId, Archive archive)
     {
