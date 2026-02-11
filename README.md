@@ -46,28 +46,45 @@
 ## Getting Started
 
 1. **Clone the repository**  
+
+- Using HTTPS
 ```bash
-git clone https://github.com/yourusername/StockWise-Backend.git
+git clone https://github.com/Unified-Testing-Inventory-Management/backend.git
 cd StockWise-Backend
 ```
-
-2. **Run the solution**
+- Using SSH
 ```bash
-  dotnet run
+  git clone git@github.com:Unified-Testing-Inventory-Management/backend.git
+  cd backend
 ```
-3. **Restore the dependencies**
+
+2. **Restore the dependencies**
 ```bash
   dotnet restore
 ```
+
+3. **Build the application**
+```bash
+  dotnet build
+```
+
+3. **Run the solution**
+```bash
+  dotnet run
+```
+
 **Databases**
+
 1. **Apply the migrations**
 ```bash
   dotnet ef migrations add (migration name)
 ```
+
 2. **Apply the databaae**
 ```bash
   dotnet ef database update
 ```
+
 3. **Drop the database**
 ```bash
   dotnet ef database drop
