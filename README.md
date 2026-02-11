@@ -62,7 +62,7 @@ cd StockWise-Backend
 **Databases**
 1. **Apply the migrations**
 ```bash
-  dotnet ef migrations (migration name)
+  dotnet ef migrations add (migration name)
 ```
 2. **Apply the databaae**
 ```bash
