@@ -18,7 +18,7 @@
 - **Language:** C#  
 - **Framework:** .NET Core Web API  
 - **Database:** Microsoft SQL Server  
-- **Libraries:** Entity Framework Core, EPPlus (for Excel import)  
+- **Libraries:** Entity Framework Core, EPPlus (for Excel import), SkiaSharp (for barcode generation), Scalar (API)
 
 ---
 
