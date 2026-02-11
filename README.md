@@ -50,7 +50,7 @@
 - Using HTTPS
 ```bash
 git clone https://github.com/Unified-Testing-Inventory-Management/backend.git
-cd StockWise-Backend
+cd backend
 ```
 - Using SSH
 ```bash
