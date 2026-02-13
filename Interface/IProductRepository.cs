@@ -19,5 +19,7 @@ public interface IProductRepository
     Task<List<Archive>> GetAllArchiveProducts(Guid userId);
     Task RestoreProductInArchive(Guid userId, Archive archive);
     Task DeleteProductInArchive(Archive archive);
-    Task SaveProductFromExcelImport(Guid userId,string productName,string category,int price,int stockQuantity);
+    Task SaveProductFromExcelImport(Guid userId, string productName, string category, int price, int stockQuantity);
+    Task<List<ProductDTOs.StockInsightsDTOs>> StockInsights(Guid userId);
+
 }
