@@ -17,4 +17,5 @@ public interface IProductService
     Task<List<Archive>>  GetAllArchiveProducts();
     Task RestoreArchiveInProduct(Guid id);
     Task DeleteProductInArchive(Guid id);
+    Task<List<ProductDTOs.StockInsightsDTOs>> StockInsights();
 }
