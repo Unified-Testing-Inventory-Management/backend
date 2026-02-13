@@ -159,4 +159,59 @@ public class ProductRepository(AppDbContext appDb, BarCodeServices barCodeServic
         _db.Products.Add(product);
         await _db.SaveChangesAsync();
     }
+
+    public async Task<List<ProductDTOs.StockInsightsDTOs>> StockInsights(Guid userId)
+    {
+        var oneMonthAgo = DateTime.UtcNow.AddDays(-30);
+
+        var stockInsights = await _db.Products
+            .Where(p => p.UserId == userId)
+            .Select(p => new
+            {
+                p.Id,
+                p.ProductName,
+                p.StockQuantity,
+
+                LastSaleDate = _db.Sales
+                    .Where(s => s.ProductId == p.Id)
+                    .Max(s => (DateTime?)s.SaleDate)
+            })
+            .Select(p => new ProductDTOs.StockInsightsDTOs
+            {
+                ProductId = p.Id,
+                UserId = userId,
+                ProductName = p.ProductName!,
+                StockQuantity = p.StockQuantity,
+
+                SaleDate = p.LastSaleDate ?? DateTime.MinValue,
+
+                Status =
+                    p.StockQuantity == 0
+                        ? "OUT OF STOCK"
+                    : p.StockQuantity <= 5
+                        ? "LOW STOCK"
+                    : p.LastSaleDate == null
+                        ? "NO SALES YET"
+                    : p.LastSaleDate < oneMonthAgo
+                        ? "NO SALES IN 30 DAYS"
+                    : "IN STOCK",
+
+                Message =
+                    p.StockQuantity == 0
+                        ? $"{p.ProductName} is OUT OF STOCK"
+                    : p.StockQuantity <= 5
+                        ? $"{p.ProductName} is running LOW STOCK"
+                    : p.LastSaleDate == null
+                        ? $"{p.ProductName} has never been sold"
+                    : p.LastSaleDate < oneMonthAgo
+                        ? $"{p.ProductName} has not been sold in the last 30 days"
+                    : $"{p.ProductName} has sufficient STOCK"
+            })
+            .Where(p => p.Status != "IN STOCK")
+            .OrderBy(p => p.StockQuantity)
+            .ToListAsync();
+
+        return stockInsights;
+    }
+
 }
