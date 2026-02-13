@@ -213,7 +213,7 @@ namespace Server.Controllers
         public async Task<IActionResult> ImportExcelProduct(IFormFile file)
         {
             try
-            {
+            {                                                                                                                                                           
                 await _productService.ImportExcelProduct(file);
                 return Ok(new { message = "Import product successfully", status = 201 });
             }
@@ -222,6 +222,15 @@ namespace Server.Controllers
                 Console.WriteLine(new { error = e.Message, status = 404 });
                 return BadRequest(new { error = e.Message, status = 404 });
             }
+        }
+
+        [Authorize(Policy = "AdminPolicy")]
+        [HttpGet("product-insights")]
+        public async Task<IActionResult> ProductInsights()
+        {
+            var productStocks = await _productService.StockInsights();
+            Console.WriteLine(new { message = "Retrieved product in low stocks", data = productStocks });
+            return Ok(new { message = "Retrieved all product stocks", data = productStocks});
         }
 
     }
