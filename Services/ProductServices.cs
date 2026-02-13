@@ -140,5 +140,13 @@ namespace Server.Services
                 }
             }
         }
+
+        public async Task<List<ProductDTOs.StockInsightsDTOs>> StockInsights()
+        {
+            var userId = _currentUserServices.GetLoggedInUser();
+            var insightsProduct = await _productRepositories.StockInsights(userId);
+
+            return insightsProduct;
+        }
     }
 }
