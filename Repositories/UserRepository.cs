@@ -1,5 +1,6 @@
 using System;
 using Microsoft.EntityFrameworkCore;
+using Server.Class;
 using Server.Data;
 using Server.DTOs;
 using Server.Interface;
@@ -37,7 +38,7 @@ public class UserRepository(AppDbContext appDb) : IUserRepository
             LastName = char.ToUpper(_registerUserDTOs.LastName[0]) + _registerUserDTOs.LastName.Substring(1).ToLower(),
             Username = _registerUserDTOs.Username,
             Password = BCrypt.Net.BCrypt.HashPassword(_registerUserDTOs.Password),
-            Role = "Admin",
+            Role = Enums.UserRole.Admin.ToString(),
             CreatedAt = DateOnly.FromDateTime(DateTime.Now)
         };
 
