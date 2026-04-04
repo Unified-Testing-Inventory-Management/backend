@@ -7,6 +7,8 @@ namespace Server.Data;
 public class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+    
+    public DbSet<Account> Accounts { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Product> Products { get; set; }
     public DbSet<Sale> Sales { get; set; }
@@ -15,18 +17,18 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<User>()
-            .HasIndex(u => u.Username)
-            .IsUnique();
+        //modelBuilder.Entity<User>()
+        //    .HasIndex(u => u.Username)
+        //    .IsUnique();
 
-        modelBuilder.Entity<User>()
-        .HasMany(u => u.Products);
+        //modelBuilder.Entity<User>()
+        //.HasMany(u => u.Products);
 
-        modelBuilder.Entity<Sale>()
-            .HasOne<User>()
-            .WithMany()
-            .HasForeignKey(s => s.UserId)
-            .OnDelete(DeleteBehavior.SetNull);
+        //modelBuilder.Entity<Sale>()
+        //    .HasOne<User>()
+        //    .WithMany()
+        //    .HasForeignKey(s => s.UserId)
+        //    .OnDelete(DeleteBehavior.SetNull);
 
         base.OnModelCreating(modelBuilder);
     }
