@@ -12,6 +12,8 @@ using System.Security.Claims;
 using System.Threading.RateLimiting;
 
 
+DotNetEnv.Env.Load();
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
