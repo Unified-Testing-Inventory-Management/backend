@@ -30,6 +30,14 @@ public class AppDbContext : DbContext
         //    .HasForeignKey(s => s.UserId)
         //    .OnDelete(DeleteBehavior.SetNull);
 
+        modelBuilder.Entity<Product>()
+            .Property(p => p.Price)
+            .HasPrecision(18, 2);
+
+        modelBuilder.Entity<Archive>()
+            .Property(a => a.Price)
+            .HasPrecision(18, 2);
+
         base.OnModelCreating(modelBuilder);
     }
 
