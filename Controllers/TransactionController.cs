@@ -1,6 +1,7 @@
 using System.Transactions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Server.DTOs;
 using Server.Interface;
 using Server.Exceptions;
@@ -9,6 +10,7 @@ namespace Server.Controllers
 {
     [Route("api/v1/transactions")]
     [ApiController]
+    [EnableRateLimiting("api")]
     public class TransactionController(ITransactionService transactionInterface) : ControllerBase
     {
         private readonly ITransactionService _transactionServices = transactionInterface;
