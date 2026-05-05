@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using OfficeOpenXml;
@@ -57,7 +58,7 @@ builder.Services.AddCors(config =>
 {
     config.AddPolicy("AllowSpecificOrigin", options =>
     {
-        options.WithOrigins("http://localhost:3000")
+        options.WithOrigins("http://localhost:5173")
                .AllowAnyHeader()
                .WithMethods("GET", "POST", "PATCH", "DELETE")
                .AllowCredentials();
@@ -82,19 +83,28 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AdminPolicy", policy => policy.RequireAuthenticatedUser().RequireClaim(ClaimTypes.Role, "Admin"));
 });
 
-// builder.Services.AddRateLimiter(options =>
-// {
-//     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
-//         RateLimitPartition.GetFixedWindowLimiter(
-//             partitionKey: httpContext.User.Identity?.Name ?? httpContext.Request.Headers.Host.ToString(),
-//             factory: partition => new FixedWindowRateLimiterOptions
-//             {
-//                 AutoReplenishment = true,
-//                 PermitLimit = 10,
-//                 QueueLimit = 0,
-//                 Window = TimeSpan.FromMinutes(1)
-//             }));
-// });
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    // Strict limiter for auth endpoints (login, register) — 5 requests per minute per IP
+    options.AddFixedWindowLimiter("auth", opt =>
+    {
+        opt.PermitLimit = 5;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueLimit = 0;
+        opt.AutoReplenishment = true;
+    });
+
+    // General limiter for all other API endpoints — 60 requests per minute per user/IP
+    options.AddFixedWindowLimiter("api", opt =>
+    {
+        opt.PermitLimit = 60;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueLimit = 0;
+        opt.AutoReplenishment = true;
+    });
+});
 
 ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
@@ -113,7 +123,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// HTTPS redirection disabled — container runs plain HTTP
+// app.UseHttpsRedirection();
 
 var summaries = new[]
 {
@@ -134,7 +145,7 @@ app.MapGet("/weatherforecast", () =>
 })
 .WithName("GetWeatherForecast");
 
-// app.UseRateLimiter();
+app.UseRateLimiter();
 app.UseCors("AllowSpecificOrigin");
 app.UseAuthentication();
 app.UseAuthorization();
