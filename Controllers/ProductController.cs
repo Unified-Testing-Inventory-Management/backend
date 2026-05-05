@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Server.DTOs;
 using Server.Exceptions;
 using Server.Interface;
@@ -8,6 +9,7 @@ namespace Server.Controllers
 {
     [Route("api/v1/products")]
     [ApiController]
+    [EnableRateLimiting("api")]
     public class ProductController(IProductService productService) : ControllerBase
     {
         private readonly IProductService _productService = productService;
