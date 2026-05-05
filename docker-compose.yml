@@ -1,0 +1,23 @@
+services:
+
+  frontend:
+    build: ../frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ../frontend:/app
+      - /app/node_modules
+    env_file:
+      - ../frontend/.env
+
+  backend:
+    build: .
+    ports:
+      - "5278:5278"
+    env_file:
+      - .env
+    environment:
+      - ASPNETCORE_URLS=http://0.0.0.0:5278
+      - ASPNETCORE_ENVIRONMENT=Development
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
