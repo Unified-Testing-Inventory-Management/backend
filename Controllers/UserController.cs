@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Server.DTOs;
 using Server.Interface;
 using System.Security.Claims;
@@ -33,6 +34,7 @@ namespace Server.Controllers
 
 
         [HttpPost("register")]
+        [EnableRateLimiting("auth")]
         public async Task<IActionResult> RegisterUser(UserDTOs.RegisterUserDTOs _registerUserDTOs)
         {
             try
@@ -50,14 +52,15 @@ namespace Server.Controllers
         }
 
         [HttpPost("login")]
+        [EnableRateLimiting("auth")]
         public async Task<IActionResult> LoginUser(UserDTOs.LoginUserDTOs _loginUserDTOs)
         {
             try
             {
                 await _userServices.LoginUser(_loginUserDTOs);
 
-                Console.WriteLine(new { message = "Logout successfully", status = 201 });
-                return Ok(new { message = "Login successfully", status = 201 });
+                Console.WriteLine(new { message = "Logout successfully", status = 200 });
+                return Ok(new { message = "Login successfully", status = 200 });
             }
             catch (UserExceptions.UnAuthorizedUserException e)
             {
