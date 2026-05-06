@@ -30,7 +30,7 @@ public class UserServices(AppDbContext appDb, IHttpContextAccessor httpContextAc
     }
     public async Task LoginUser(UserDTOs.LoginUserDTOs _loginUserDTOs)
     {
-        var user = await _userRepository.GetUser(_loginUserDTOs.Username);
+        var user = await _userRepository.GetUser(_loginUserDTOs.Identifier);
 
         if (user == null || !BCrypt.Net.BCrypt.Verify(_loginUserDTOs.Password, user.Password))
             throw new UserExceptions.UnAuthorizedUserException("Username or password is incorrect", 401);
@@ -38,7 +38,7 @@ public class UserServices(AppDbContext appDb, IHttpContextAccessor httpContextAc
         var claims = new[]
         {
         new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-        new Claim(ClaimTypes.Name, _loginUserDTOs.Username),
+        new Claim(ClaimTypes.Name, _loginUserDTOs.Identifier),
         new Claim(ClaimTypes.Role, user.Role!)
     };
 
