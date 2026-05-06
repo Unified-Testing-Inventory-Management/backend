@@ -6,7 +6,8 @@ WORKDIR /src
 COPY . .
 
 RUN dotnet restore
-RUN dotnet publish -c Release -o /app/publish
+RUN dotnet build -c Release --no-restore
+RUN dotnet publish -c Release --no-build -o /app/publish
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:10.0
