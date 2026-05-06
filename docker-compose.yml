@@ -1,7 +1,11 @@
+version: "3.8"
+
 services:
 
   frontend:
     build: ../frontend
+    depends_on:
+      - backend
     ports:
       - "5173:5173"
     volumes:
@@ -9,6 +13,12 @@ services:
       - /app/node_modules
     env_file:
       - ../frontend/.env
+    develop:
+      watch:
+        - action: rebuild
+          path: ../frontend/package.json
+        - action: rebuild
+          path: ../frontend/pnpm-lock.yaml
 
   backend:
     build: .
@@ -21,3 +31,12 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    develop:
+      watch:
+        - action: rebuild
+          path: .
+          ignore:
+            - bin/
+            - obj/
+            - .git/
+            - docker-compose.yml
