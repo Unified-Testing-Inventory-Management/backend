@@ -27,7 +27,7 @@ public class UserRepository(AppDbContext appDb) : IUserRepository
         return await _db.Users.FirstOrDefaultAsync(u => u.Id.ToString() == userId);
     }
 
-    public async Task SaveUser(UserDTOs.RegisterUserDTOs _registerUserDTOs)
+    public async Task<User> SaveUser(UserDTOs.RegisterUserDTOs _registerUserDTOs)
     {
         var Id = Guid.NewGuid();
 
@@ -44,6 +44,8 @@ public class UserRepository(AppDbContext appDb) : IUserRepository
 
         await _db.Users.AddAsync(saveUser);
         await _db.SaveChangesAsync();
+
+        return saveUser;
     }
 
     public async Task UpdateUser(User user, UserDTOs.UpdateUserDTOs _updateUserDTOs)
