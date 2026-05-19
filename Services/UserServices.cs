@@ -8,25 +8,30 @@ using Server.DTOs;
 using Server.Exceptions;
 using Server.Interface;
 using Server.Models;
+using Server.Repositories;
 
 namespace Server.Services;
 
-public class UserServices(AppDbContext appDb, IHttpContextAccessor httpContextAccessor, IUserRepository userRepository, CurrentUserServices currentUserServices) : IUserService
+public class UserServices(IHttpContextAccessor httpContextAccessor, IUserRepository userRepository, CurrentUserServices currentUserServices, IAccountRepository accountRepository) : IUserService
 {
-
-    private readonly AppDbContext _db = appDb;
 
     private readonly IHttpContextAccessor _ihttpContextAccessor = httpContextAccessor;
     private readonly IUserRepository _userRepository = userRepository;
     private readonly CurrentUserServices _currentServices = currentUserServices;
+    private readonly IAccountRepository _accountRepository = accountRepository;
     public async Task RegisterUser(UserDTOs.RegisterUserDTOs _registerUserDTOs)
     {
         var user = await _userRepository.GetUser(_registerUserDTOs.Username);
 
         if (user is not null)
+        {
             throw new UserExceptions.UserAlreadyExists($"{_registerUserDTOs.Username} is already exists", 409);
+        }
 
-        await _userRepository.SaveUser(_registerUserDTOs);
+        var account = await _userRepository.SaveUser(_registerUserDTOs);
+        var accountId = account.Id;
+        var accountName = _registerUserDTOs.Username.ToString();
+        await _accountRepository.SaveAccount(accountName);
     }
     public async Task LoginUser(UserDTOs.LoginUserDTOs _loginUserDTOs)
     {
