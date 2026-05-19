@@ -28,6 +28,7 @@ builder.Services.AddScoped<GenerateImageServices>();
 builder.Services.AddScoped<IUserService, UserServices>();
 builder.Services.AddScoped<IProductService, ProductServices>();
 builder.Services.AddScoped<ITransactionService, TransactionServices>();
+builder.Services.AddScoped<IAccountService, AccountServices>();
 
 //Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
