@@ -1,16 +1,11 @@
 using System;
 
-namespace Server.Models
+namespace Server.Models;
+
+public class Account()
 {
-    public class Account
-    {
-        public Guid Id { get; set; } = Guid.NewGuid();
-        public string? AccountName { get; set; }
-
-        [System.Text.Json.Serialization.JsonIgnore]
-        public User? User { get; set; }
-
-        public string? Role { get; set; }
-        public DateTime DateTime { get; set; }
-    }
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public string? AccountName { get; set; }
+    public string? Role { get; set; }
+    public DateOnly DateOnly { get; set; }
 }
