@@ -17,19 +17,6 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        //modelBuilder.Entity<User>()
-        //    .HasIndex(u => u.Username)
-        //    .IsUnique();
-
-        //modelBuilder.Entity<User>()
-        //.HasMany(u => u.Products);
-
-        //modelBuilder.Entity<Sale>()
-        //    .HasOne<User>()
-        //    .WithMany()
-        //    .HasForeignKey(s => s.UserId)
-        //    .OnDelete(DeleteBehavior.SetNull);
-
         modelBuilder.Entity<Product>()
             .Property(p => p.Price)
             .HasPrecision(18, 2);
@@ -41,4 +28,8 @@ public class AppDbContext : DbContext
         base.OnModelCreating(modelBuilder);
     }
 
+    internal async Task SaveChangesAsync(Account account)
+    {
+        throw new NotImplementedException();
+    }
 }
